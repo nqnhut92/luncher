@@ -1,0 +1,14 @@
+[
+{"id":"com-tam","name":"Cơm tấm","emoji":"🍛","type":"rice"},
+{"id":"pho","name":"Phở bò","emoji":"🍜","type":"noodle"},
+{"id":"banh-mi","name":"Bánh mì","emoji":"🥖","type":"light"},
+{"id":"bun-thit","name":"Bún thịt nướng","emoji":"🥢","type":"noodle"},
+{"id":"com-ga","name":"Cơm gà","emoji":"🍗","type":"rice"},
+{"id":"bun-bo","name":"Bún bò Huế","emoji":"🍲","type":"noodle"},
+{"id":"com-chay","name":"Cơm chay","emoji":"🥗","type":"veg"},
+{"id":"mi-quang","name":"Mì Quảng","emoji":"🍜","type":"noodle"},
+{"id":"banh-cuon","name":"Bánh cuốn","emoji":"🥟","type":"light"},
+{"id":"com-chien","name":"Cơm chiên","emoji":"🍚","type":"rice"},
+{"id":"salad","name":"Salad rau củ","emoji":"🥬","type":"veg"},
+{"id":"bun-chay","name":"Bún chay","emoji":"🌱","type":"veg"}
+]
