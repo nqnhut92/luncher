@@ -1,1 +1,27 @@
-{"name":"luncher","version":"0.1.0","private":true,"type":"module","scripts":{"dev":"vite --host 0.0.0.0","build":"vite build","preview":"vite preview --host 0.0.0.0","test":"node --test"},"devDependencies":{"vite":"^6.4.1"}}
+{
+  "name": "luncher",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0",
+    "test": "node --test",
+    "db:setup": "node --env-file-if-exists=.env.local scripts/setup-db.js",
+    "dev:full": "node --env-file-if-exists=.env.local scripts/dev.js",
+    "build:vercel": "npm run db:setup && npm run build",
+    "test:e2e": "node scripts/check-browser.js"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.12",
+    "playwright": "^1.64.1",
+    "vite": "^6.4.1"
+  },
+  "dependencies": {
+    "@neondatabase/serverless": "^1.2.0"
+  },
+  "engines": {
+    "node": ">=22.12.0"
+  }
+}
