@@ -14,7 +14,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 
 - **Vòng quay chọn món:** chọn ngẫu nhiên trong các món phù hợp, với bộ lọc cơm, bún/mì, ăn nhẹ và ăn chay.
 - **Chế độ cá nhân:** lưu lịch sử ngay trên trình duyệt bằng `localStorage`.
-- **Nhóm ăn chung:** tạo nhóm một lần và chia sẻ link cố định. Ai có link cũng có thể xem, chốt, đổi hoặc bỏ chốt món trong ngày.
+- **Nhóm ăn chung:** tạo nhóm một lần và chia sẻ link cố định. Ai có link cũng có thể xem, sửa tên nhóm, chốt, đổi hoặc bỏ chốt món trong ngày.
 - **Tránh lặp trong tuần:** món đã chốt được loại khỏi các lần quay tiếp trong tuần, trừ khi bật tùy chọn cho phép lặp.
 - **Xử lý thao tác đồng thời:** lượt chốt từ dữ liệu cũ không tự ghi đè quyết định mới của nhóm.
 - **Giao diện linh hoạt:** hỗ trợ điện thoại, ghi nhớ chế độ sáng/tối, giảm chuyển động theo thiết bị và không có âm thanh.
@@ -22,9 +22,11 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 ## Cách dùng nhóm ăn chung
 
 1. Nhập tên nhóm ở trang chính.
-2. Copy link `/g/<uuid>` được tạo và ghim trong nhóm chat.
+2. Copy link `/g/<code>` được tạo và ghim trong nhóm chat.
 3. Quay thử để tìm món phù hợp. Việc quay diễn ra riêng trên từng máy, chưa thay đổi món của nhóm.
 4. Chốt món để lưu cho cả nhóm. Nếu hôm nay đã có món được chốt, nút đổi món sẽ thể hiện rõ việc thay lựa chọn chung.
+
+Mã nhóm gồm sáu ký tự chữ/số, phân biệt hoa thường, ví dụ `/g/Ab3xY9`. Link UUID cũ không còn được hỗ trợ. Đổi tên nhóm không làm thay đổi link.
 
 Mỗi nhóm có lịch sử riêng và một món được chốt mỗi ngày. Link nhóm dùng được qua các ngày và tuần, miễn là bản ghi tương ứng còn được giữ trong cơ sở dữ liệu.
 
@@ -72,7 +74,7 @@ npm run dev:full
 
 Server phát triển chạy cả Vite và API trên cổng `5173`.
 
-Bạn cũng có thể chạy [`db/schema.sql`](db/schema.sql) trực tiếp trong Neon SQL Editor. Bước này tạo bảng còn thiếu và giữ nguyên bản ghi hiện có; có thể chạy lại với schema hiện tại.
+Chạy `npm run db:setup` cho cả DB mới lẫn DB hiện có. Lệnh này áp dụng [`db/schema.sql`](db/schema.sql), cấp mã công khai cho nhóm cũ và đặt ràng buộc mã không được rỗng. Chỉ chạy file SQL chưa hoàn tất bước chuyển dữ liệu. Có thể chạy lại lệnh setup mà vẫn giữ nguyên các bản ghi hiện có.
 
 Chuỗi kết nối là thông tin bí mật chỉ dùng phía server. Không commit hoặc đưa vào biến có tiền tố `VITE_`.
 
@@ -115,7 +117,9 @@ Kiểm thử tự động dùng cơ sở dữ liệu tương thích Postgres tro
 
 ## Dữ liệu và quyền truy cập
 
-- `luncher_rooms` lưu ID, tên và phiên bản dữ liệu của nhóm.
+Xem [thiết kế cơ sở dữ liệu](docs/database-design.md) để tra sơ đồ quan hệ, các cột, ràng buộc, luồng ghi và quy trình chuyển dữ liệu.
+
+- `luncher_rooms` lưu UUID nội bộ, mã công khai sáu ký tự duy nhất, tên và phiên bản dữ liệu của nhóm.
 - `luncher_meal_choices` lưu món đã chốt. Khóa chính `(room_id, meal_date)` bảo đảm mỗi nhóm chỉ có một món mỗi ngày.
 - Thao tác ghi SQL nguyên tử kiểm tra phiên bản nhóm trước khi nhận thay đổi. Server cũng kiểm tra ID món, ngày của nhóm và những món đã dùng trong tuần.
 - Link nhóm cấp cả quyền xem và chỉnh sửa. Không có chủ phòng, mật khẩu hoặc tài khoản để khôi phục. Chỉ chia sẻ link trong nhóm dự định và tránh đặt thông tin nhạy cảm trong tên nhóm.

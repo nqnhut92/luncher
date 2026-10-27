@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
+import { isRoomCode } from './room-codes.js';
 import { roomToday } from './calendar.js';
 const ids = new Set(JSON.parse(readFileSync(new URL('../src/foods.json', import.meta.url), 'utf8')).map(f => f.id));
-const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export function createHandler(getStore, clock = () => new Date()) {
   return async function handler(req, res) {
@@ -37,21 +37,26 @@ export function createHandler(getStore, clock = () => new Date()) {
         return send(201, { room: await store.get(id), today });
       }
       const id = req.method === 'GET' ? req.query?.id : body.id;
-      if (typeof id !== 'string' || !uuid.test(id)) return send(400, { error: 'Link nhóm không hợp lệ.' });
+      if (typeof id !== 'string' || !isRoomCode(id)) return send(400, { error: 'Link nhóm không hợp lệ.' });
       if (req.method === 'GET') {
         const room = await (await getStore()).get(id);
         return room ? send(200, { room, today }) : send(404, { error: 'Không tìm thấy nhóm. Kiểm tra lại link nhé.' });
       }
-      if (!['confirm', 'replace', 'undo'].includes(body.action) || !Number.isSafeInteger(body.revision) || body.revision < 0) {
+      if (!['confirm', 'replace', 'undo', 'rename'].includes(body.action) || !Number.isSafeInteger(body.revision) || body.revision < 0) {
         return send(400, { error: 'Thao tác không hợp lệ.' });
       }
-      if (body.action !== 'undo' && (!ids.has(body.foodId) || typeof body.repeat !== 'boolean')) {
+      if (['confirm', 'replace'].includes(body.action) && (!ids.has(body.foodId) || typeof body.repeat !== 'boolean')) {
         return send(400, { error: 'Món hoặc tùy chọn lặp không hợp lệ.' });
       }
+      if (body.action === 'rename' && (typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 60)) {
+        return send(400, { error: 'Tên nhóm cần từ 1 đến 60 ký tự.' });
+      }
       // The server's day wins; reject a page that was left open across midnight.
-      if (body.today !== today) return send(409, { error: 'Đã sang ngày mới. Tải lại kết quả trước khi chốt nhé.' });
+      if (body.action !== 'rename' && body.today !== today) return send(409, { error: 'Đã sang ngày mới. Tải lại kết quả trước khi chốt nhé.' });
       const store = await getStore();
-      const changed = body.action === 'undo'
+      const changed = body.action === 'rename'
+        ? await store.rename({ id, revision: body.revision, name: body.name.trim() })
+        : body.action === 'undo'
         ? await store.undo({ id, revision: body.revision, today })
         : await store.choose({ id, revision: body.revision, today, foodId: body.foodId,
           replace: body.action === 'replace', repeat: body.repeat });

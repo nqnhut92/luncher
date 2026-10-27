@@ -13,3 +13,8 @@ CREATE TABLE IF NOT EXISTS luncher_meal_choices (
   food_id text NOT NULL,
   PRIMARY KEY (room_id, meal_date)
 );
+
+-- Additive migration: keep UUID primary keys and history references intact.
+-- Setup backfills public codes for existing rooms before deploying the new API.
+ALTER TABLE luncher_rooms ADD COLUMN IF NOT EXISTS code varchar(6)
+  UNIQUE CHECK (code ~ '^[A-Za-z0-9]{6}$');

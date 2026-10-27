@@ -31,6 +31,9 @@ try {
   await first.waitForURL('**/g/**');
   await first.waitForFunction(() => !document.querySelector('#spin').disabled);
   const roomUrl = first.url();
+  const code = new URL(roomUrl).pathname.split('/')[2];
+  assert.match(code, /^[A-Za-z0-9]{6}$/);
+
   assert.ok(await first.locator('.group-bar h2').innerText() === 'Hội đói <b>tầng 3</b>');
   assert.equal(await first.locator('.group-bar h2 b').count(), 0, 'room name is escaped');
   assert.equal(await first.locator('.week-row').count(), 0, 'personal history not copied into group');
@@ -60,6 +63,20 @@ try {
   const theme = await second.locator('html').getAttribute('data-theme');
   await second.reload(); await second.locator('#undo').waitFor();
   assert.equal(await second.locator('html').getAttribute('data-theme'), theme);
+  await second.locator('#edit-name').click();
+  await second.locator('#rename-name').fill('Hội ăn trưa mới');
+  await second.locator('#cancel-rename').click();
+  assert.equal(await second.locator('.group-bar h2').innerText(), 'Hội đói <b>tầng 3</b>');
+  await second.locator('#edit-name').click();
+  await second.locator('#rename-name').fill('Hội ăn trưa mới');
+  await second.locator('#rename-group .small-primary').click();
+  await second.waitForFunction(() => document.querySelector('.group-bar h2')?.textContent === 'Hội ăn trưa mới');
+  await first.locator('#refresh-group').click();
+  await first.waitForFunction(() => document.querySelector('.group-bar h2')?.textContent === 'Hội ăn trưa mới');
+  assert.equal(second.url(), roomUrl);
+  assert.equal(await second.locator('.result h2').innerText(), replacement);
+  const headings = await second.locator('.side-card .eyebrow').allTextContents();
+  assert.ok(headings.every(text => !/^0[12] \//.test(text)));
   await second.screenshot({ path: '/tmp/luncher-group-mobile.png', fullPage: true });
   await first.screenshot({ path: '/tmp/luncher-group-desktop.png', fullPage: true });
   await second.locator('#undo').click();
@@ -75,7 +92,7 @@ try {
   await second.goto(roomUrl); await second.locator('.notice').waitFor();
   assert.equal(await second.locator('#spin').isDisabled(), true);
   assert.deepEqual(errors, []);
-  console.log('PASS: personal mode, create/share/deep link, escaped group name, two independent members, conflict, replacement, refresh, reload persistence, undo, mobile, theme and failed/offline room handling.');
+  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, replacement, refresh, reload persistence, undo, mobile, theme and failed/offline room handling.');
 } finally {
   await browser?.close();
   await app.close();

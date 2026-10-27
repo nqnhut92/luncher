@@ -14,7 +14,7 @@ The interface is in Vietnamese and supports light and dark themes.
 
 - **Meal wheel:** randomly select from the available dishes, with filters for rice, noodles, light meals, and vegetarian options.
 - **Personal mode:** keep meal history in the current browser using `localStorage`.
-- **Shared groups:** create a group once and share its permanent link. Everyone with the link can view, confirm, replace, or undo the day's choice.
+- **Shared groups:** create a group once and share its permanent link. Everyone with the link can view, rename the group, confirm, replace, or undo the day's choice.
 - **Weekly variety:** confirmed dishes are excluded for the rest of the week unless repeats are explicitly enabled.
 - **Concurrent updates:** stale confirmations cannot silently overwrite a newer group decision.
 - **Responsive design:** mobile layouts, persistent theme preferences, reduced-motion support, and no audio.
@@ -22,9 +22,11 @@ The interface is in Vietnamese and supports light and dark themes.
 ## How shared groups work
 
 1. Enter a group name on the home page.
-2. Copy the generated `/g/<uuid>` link and pin it in your group chat.
+2. Copy the generated `/g/<code>` link and pin it in your group chat.
 3. Spin privately to explore options. Spinning alone does not change the group's meal.
 4. Confirm a dish to save it for everyone. If a meal is already confirmed, replacing it is a separate, explicitly labeled action.
+
+Group codes contain six case-sensitive alphanumeric characters, for example `/g/Ab3xY9`. Legacy UUID URLs are no longer accepted. The group name can be edited without changing its link.
 
 Each group has one confirmed meal per day and its own history. Group links remain valid across days and weeks as long as the underlying database records are retained.
 
@@ -72,7 +74,7 @@ npm run dev:full
 
 The full development server serves Vite and the API together on port `5173`.
 
-Alternatively, execute [`db/schema.sql`](db/schema.sql) in the Neon SQL Editor. Schema setup creates missing tables and preserves existing records; it is safe to rerun for the current schema.
+Run `npm run db:setup` for both new and existing databases. It applies [`db/schema.sql`](db/schema.sql), assigns public codes to existing groups, and enforces non-null codes. Running the SQL file alone does not complete the data migration. Setup preserves existing records and is safe to rerun.
 
 Connection strings are server-only credentials. Never commit them or expose them through a `VITE_` variable.
 
@@ -115,7 +117,9 @@ Automated tests use an in-memory Postgres-compatible database and do not modify 
 
 ## Data and access model
 
-- `luncher_rooms` stores group IDs, names, and revisions.
+See [Database design](docs/database-design.md) for the ER diagram, columns, constraints, write flows, and migration details.
+
+- `luncher_rooms` stores internal UUIDs, unique six-character public codes, names, and revisions.
 - `luncher_meal_choices` stores confirmed dishes. A primary key on `(room_id, meal_date)` enforces one meal per group per day.
 - Atomic SQL writes check the room revision before accepting a change. The server also validates dish IDs, the group calendar, and weekly exclusions.
 - A group link grants both read and write access. There are no owners, passwords, or recovery accounts. Keep links within the intended group and avoid storing sensitive information in group names.
