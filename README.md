@@ -1,5 +1,7 @@
 # Luncher
 
+**English** · [Tiếng Việt](README.vi.md)
+
 **Less deciding. More lunch.**
 
 Luncher is a lightweight lunch picker for individuals and groups. Spin the wheel, confirm a dish, and keep the week's meals varied without accounts or room administrators.
