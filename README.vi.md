@@ -47,6 +47,14 @@ Desktop hiển thị tối đa hai hàng. Màn hình hẹp cuộn ngang trong da
 
 Nhóm gần đây lưu bằng `localStorage`, không có danh sách nhóm công khai từ DB. Trình duyệt hoặc thiết bị khác có danh sách riêng; xóa dữ liệu trình duyệt sẽ mất các lối tắt này. Bạn vẫn nên ghim link trong nhóm chat.
 
+## Đơn nhóm Grab và ảnh preview
+
+Trong nhóm, thêm link đơn nhóm Grab, lưu rồi chia sẻ link nhóm Luncher. Ai có link nhóm cũng có thể sửa hoặc xóa link Grab. Link hợp lệ phải dùng HTTPS trên `grab.com`, tên miền con của `grab.com` hoặc `grab.onelink.me`, không chứa tên đăng nhập/mật khẩu và dài tối đa 500 ký tự. Xóa link sẽ bỏ mã QR, không thay đổi thực đơn hay nhật ký.
+
+Trang nhóm hiện QR dẫn tới link Grab đã lưu. `/g/<code>` trả giao diện cùng metadata Open Graph được tạo trên server; `/api/qr?id=<code>` tạo ảnh PNG 1200×630. Ứng dụng chat có thể dùng ảnh này làm preview, nhưng cũng có thể giữ ảnh cũ trong cache hoặc không hiển thị ảnh. Đổi link Grab sẽ đổi URL phiên bản ảnh; thao tác này không ép ứng dụng chat làm mới tin nhắn đã gửi.
+
+Link đã lưu không tự đặt lại mỗi ngày. Hãy thay hoặc xóa khi đơn kết thúc. Luncher không tạo đơn Grab, kiểm tra hạn đơn hoặc gom đơn từng người. Chia sẻ link nhóm cũng cho người nhận và dịch vụ tạo preview khả năng truy cập link Grab đã lưu.
+
 ## Công nghệ
 
 | Thành phần | Công nghệ |
@@ -107,7 +115,7 @@ Chuỗi kết nối là thông tin bí mật chỉ dùng phía server. Không co
 4. Deploy. Lệnh build chuẩn bị schema trước khi build giao diện. Tài khoản kết nối DB cần quyền tạo bảng ứng dụng ở lần triển khai đầu tiên.
 5. Mở trang production, tạo nhóm và dùng một phiên trình duyệt khác để kiểm tra việc chốt món chung.
 
-[`vercel.json`](vercel.json) khai báo lệnh build và rewrite cho `/g/:id`. Vercel triển khai [`api/rooms.js`](api/rooms.js) thành server function. Nếu dashboard đang ghi đè lệnh build, cập nhật theo giá trị ở trên. Cần redeploy sau khi thay đổi biến môi trường.
+[`vercel.json`](vercel.json) khai báo lệnh build và rewrite cho `/g/:id`. Vercel chuyển `/g/:id` tới [`api/group-page.js`](api/group-page.js) để tạo metadata preview và phục vụ ảnh QR qua [`api/qr.js`](api/qr.js). [`api/rooms.js`](api/rooms.js) xử lý dữ liệu nhóm; cả ba dùng chung store Neon phía server. Nếu dashboard đang ghi đè lệnh build, cập nhật theo giá trị ở trên. Cần redeploy sau khi thay đổi biến môi trường.
 
 Chia sẻ link nhóm từ **domain production cố định** thay vì URL preview của từng deployment. Nên dùng Neon branch riêng cho Production và Preview để tách dữ liệu thử nghiệm.
 
@@ -142,6 +150,10 @@ Xem [thiết kế cơ sở dữ liệu](docs/database-design.md) để tra sơ �
 - Khi yêu cầu nhóm thất bại, app không chuyển sang lưu local. Thao tác ghi không được tự thử lại vì yêu cầu hết thời gian chờ có thể đã được lưu trên server.
 
 Phiên bản hiện tại chưa có sửa danh sách món riêng, nhập/xuất JSON, bình chọn, gom đơn từng người hoặc cập nhật đẩy theo thời gian thực.
+
+## Đóng góp bằng AI agent
+
+Đọc [AGENTS.md](AGENTS.md) trước khi sửa repo. Claude Code nạp cùng bộ quy tắc qua [CLAUDE.md](CLAUDE.md). Khi đổi hành vi, cập nhật tài liệu liên quan trong cùng thay đổi, gồm cả hai bản README và tài liệu database/API nếu bị ảnh hưởng. Báo rõ kiểm tra đã chạy và giải thích nếu thay đổi không cần cập nhật docs.
 
 ## Nguồn cảm hứng
 

@@ -47,6 +47,14 @@ Desktop displays at most two rows. Narrow screens use a contained horizontal scr
 
 Recent groups are stored in `localStorage`, not a public database directory. Another browser or device starts with its own list, and clearing browser data removes these shortcuts. Keep the shared link in your group chat as well.
 
+## Grab group orders and link previews
+
+In a shared group, add a Grab group-order link, save it, then share the Luncher group link. Any participant with the group link can update or clear the Grab link. Accepted links use HTTPS on `grab.com`, a subdomain of `grab.com`, or `grab.onelink.me`, contain no username/password, and are at most 500 characters long. Clearing the link removes the QR without changing meals or their journal.
+
+The group page shows a QR code for the saved Grab URL. `/g/<code>` serves the app shell with server-rendered Open Graph metadata; `/api/qr?id=<code>` produces a 1200×630 PNG. Chat services may show this as a preview, but can cache earlier previews or choose not to display an image. Changing the Grab link changes the image version URL; it cannot force a chat service to refresh an already shared message.
+
+The saved link is not reset automatically each day. Replace or clear it when an order ends. Luncher does not create Grab orders, track expiry, or collect individual orders. Sharing the group link also makes its saved Grab URL available to recipients and link-preview services.
+
 ## Stack
 
 | Layer | Technology |
@@ -107,7 +115,7 @@ Connection strings are server-only credentials. Never commit them or expose them
 4. Deploy. The build command runs schema setup before building the frontend. The database role must have permission to create the application tables on the first deployment.
 5. Open the production site, create a group, and use a second browser session to verify shared confirmations.
 
-[`vercel.json`](vercel.json) defines the build command and the `/g/:id` rewrite. Vercel deploys [`api/rooms.js`](api/rooms.js) as a server function. If the dashboard overrides the build command, use the value above. Redeploy after changing environment variables.
+[`vercel.json`](vercel.json) defines the build command and the `/g/:id` rewrite. Vercel routes `/g/:id` through [`api/group-page.js`](api/group-page.js) for preview metadata and serves the QR image through [`api/qr.js`](api/qr.js). [`api/rooms.js`](api/rooms.js) handles group data; all three use the shared server-side Neon store. If the dashboard overrides the build command, use the value above. Redeploy after changing environment variables.
 
 Share group links from a **stable production domain**, rather than a deployment-specific preview URL. Use separate Neon branches for Production and Preview to keep test data separate.
 
@@ -142,6 +150,10 @@ See [Database design](docs/database-design.md) for the ER diagram, columns, cons
 - Failed group requests never fall back to local storage. Writes are not retried automatically, because a timed-out request may already have committed.
 
 The current version does not include custom food editing, JSON import/export, voting, individual order collection, or live push updates.
+
+## Contributing with AI agents
+
+Read [AGENTS.md](AGENTS.md) before changing this repository. Claude Code imports the same rules through [CLAUDE.md](CLAUDE.md). Changes to behavior must include the relevant documentation in the same change, including both README languages and database/API documentation when affected. Report validation performed and explain when documentation updates are unnecessary.
 
 ## Inspiration
 
