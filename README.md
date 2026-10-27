@@ -14,8 +14,9 @@ The interface is in Vietnamese and supports light and dark themes.
 
 - **Meal wheel:** randomly select from the available dishes, with filters for rice, noodles, light meals, and vegetarian options.
 - **Personal mode:** keep meal history in the current browser using `localStorage`.
-- **Shared groups:** create a group once and share its permanent link. Everyone with the link can view, rename the group, confirm, replace, or undo the day's choice.
+- **Shared groups:** create a group once and share its permanent link. Everyone with the link can view, rename the group, confirm, or replace the day's choice.
 - **Weekly variety:** confirmed dishes are excluded for the rest of the week unless repeats are explicitly enabled.
+- **Change journal:** confirmations and replacements retain a timestamped record of the previous and new dishes.
 - **Concurrent updates:** stale confirmations cannot silently overwrite a newer group decision.
 - **Responsive design:** mobile layouts, persistent theme preferences, reduced-motion support, and no audio.
 
@@ -24,7 +25,9 @@ The interface is in Vietnamese and supports light and dark themes.
 1. Enter a group name on the home page.
 2. Copy the generated `/g/<code>` link and pin it in your group chat.
 3. Spin privately to explore options. Spinning alone does not change the group's meal.
-4. Confirm a dish to save it for everyone. If a meal is already confirmed, replacing it is a separate, explicitly labeled action.
+4. Confirm a dish to save it for everyone. The wheel locks for the day.
+5. To change it, select **Change today’s meal**. The existing choice remains confirmed until a replacement is saved; cancelling leaves it untouched.
+6. Open **Change history** to see confirmations and replacements with timestamps. There is no destructive undo action.
 
 Group codes contain six case-sensitive alphanumeric characters, for example `/g/Ab3xY9`. Legacy UUID URLs are no longer accepted. The group name can be edited without changing its link.
 
@@ -113,16 +116,18 @@ Browser tests use `/usr/bin/chromium` when available. To use another installatio
 npx playwright install chromium
 ```
 
-Automated tests use an in-memory Postgres-compatible database and do not modify Neon data. They cover group isolation, conflicting writes, explicit replacement, undo, weekly exclusions, persistence across page reloads, and failure handling. Verify the deployed API and Neon connection separately after deployment.
+Automated tests use an in-memory Postgres-compatible database and do not modify Neon data. They cover group isolation, conflicting writes, locked confirmations, cancellable replacement, change journals, weekly exclusions, persistence across page reloads, and failure handling. Verify the deployed API and Neon connection separately after deployment.
 
 ## Data and access model
 
 See [Database design](docs/database-design.md) for the ER diagram, columns, constraints, write flows, and migration details.
 
 - `luncher_rooms` stores internal UUIDs, unique six-character public codes, names, and revisions.
+- `luncher_meal_events` retains confirmation/replacement events; older choices receive a clearly labeled migration baseline when the original time is unknown. No actor identity is recorded.
 - `luncher_meal_choices` stores confirmed dishes. A primary key on `(room_id, meal_date)` enforces one meal per group per day.
 - Atomic SQL writes check the room revision before accepting a change. The server also validates dish IDs, the group calendar, and weekly exclusions.
 - A group link grants both read and write access. There are no owners, passwords, or recovery accounts. Keep links within the intended group and avoid storing sensitive information in group names.
+- Personal daily choices and their journal are saved together under `luncher-personal-v2`; existing local history is migrated without deletion.
 - Personal history remains on the device. It is not copied into a group, synchronized across devices, or recovered after browser storage is cleared.
 - Failed group requests never fall back to local storage. Writes are not retried automatically, because a timed-out request may already have committed.
 

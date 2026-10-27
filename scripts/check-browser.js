@@ -11,7 +11,8 @@ import { createHandler } from '../server/handler.js';
 const db = new PGlite();
 await db.exec(await readFile(new URL('../db/schema.sql', import.meta.url), 'utf8'));
 const store = roomStore(async (sql, params) => (await db.query(sql, params)).rows);
-const app = await startDevServer(createHandler(() => store), 0);
+let testClockNow = new Date();
+const app = await startDevServer(createHandler(() => store, () => testClockNow), 0);
 const origin = `http://127.0.0.1:${app.server.address().port}`;
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
 let browser;
@@ -26,6 +27,15 @@ try {
   // Personal confirmation remains independent of shared-room data.
   await first.locator('#spin').click(); await first.locator('#confirm').click();
   assert.equal(await first.locator('.week-row').count(), 1);
+  assert.equal(await first.locator('#spin').isDisabled(),true);
+  assert.equal(await first.locator('#undo').count(),0);
+  const personalChoice=await first.locator('.result h2').innerText();
+  await first.locator('#change-meal').click();
+  await first.locator('#spin').click();await first.locator('#confirm').waitFor();
+  await first.locator('#cancel-change').click();
+  assert.equal(await first.locator('.result h2').innerText(),personalChoice);
+  assert.equal(await first.locator('#spin').isDisabled(),true);
+  assert.equal(await first.locator('.activity-row').count(),1);
   await first.locator('#group-name').fill('Hội đói <b>tầng 3</b>');
   await first.locator('#create-group button').click();
   await first.waitForURL('**/g/**');
@@ -42,26 +52,42 @@ try {
   // Member B keeps a stale revision and a rolled suggestion while A confirms.
   await second.locator('#spin').click(); await second.locator('#confirm').waitFor();
   await first.locator('#spin').click(); await first.locator('#confirm').click();
-  await first.locator('#undo').waitFor();
+  await first.locator('#change-meal').waitFor();
   const picked = await first.locator('.result h2').innerText();
   await second.locator('#confirm').click();
   await second.locator('.toast').waitFor();
   assert.equal(await second.locator('.result h2').innerText(), picked, 'conflict shows winner');
   assert.equal(await second.locator('.week-row').count(), 1);
   assert.ok(!(await second.locator('.wheel-label b').allTextContents()).includes(picked));
-  // Any member may explicitly replace and undo the shared choice.
+  // Confirmed choices stay locked; cancelling a replacement never deletes them.
+  assert.equal(await second.locator('#spin').isDisabled(),true);
+  assert.equal(await second.locator('#undo').count(),0);
+  await second.locator('#change-meal').click();
+  await second.locator('#spin').click();await second.locator('#confirm').waitFor();
+  assert.equal((await store.get(code)).history[0].foodId,(await store.get(code)).events[0].foodId);
+  assert.equal((await store.get(code)).events.length,1);
+  await second.locator('#cancel-change').click();
+  assert.equal(await second.locator('.result h2').innerText(),picked);
+  assert.equal(await second.locator('#spin').isDisabled(),true);
+  await second.locator('#change-meal').click();
   await second.locator('#spin').click();
   assert.match(await second.locator('#confirm').innerText(), /Đổi món/);
-  await second.locator('#confirm').click(); await second.locator('#undo').waitFor();
+  await second.locator('#confirm').click(); await second.locator('#change-meal').waitFor();
   const replacement = await second.locator('.result h2').innerText();
+  assert.notEqual(replacement,picked);
+  assert.equal(await second.locator('#spin').isDisabled(),true);
+  await second.locator('.activity-log summary').click();
+  assert.equal(await second.locator('.activity-row').count(),2);
+  const activityText=await second.locator('.activity-list').innerText();
+  assert.ok(activityText.includes(picked)&&activityText.includes(replacement));
   await first.locator('#refresh-group').click();
   await first.waitForFunction(name => document.querySelector('.result h2')?.textContent === name, replacement);
-  await second.reload(); await second.locator('#undo').waitFor();
+  await second.reload(); await second.locator('#change-meal').waitFor();
   assert.equal(await second.locator('.result h2').innerText(), replacement);
   assert.equal(await second.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
   await second.locator('#theme').click();
   const theme = await second.locator('html').getAttribute('data-theme');
-  await second.reload(); await second.locator('#undo').waitFor();
+  await second.reload(); await second.locator('#change-meal').waitFor();
   assert.equal(await second.locator('html').getAttribute('data-theme'), theme);
   await second.locator('#edit-name').click();
   await second.locator('#rename-name').fill('Hội ăn trưa mới');
@@ -103,8 +129,11 @@ try {
   await first.clock.resume();
   await second.screenshot({ path: '/tmp/luncher-group-mobile.png', fullPage: true });
   await first.screenshot({ path: '/tmp/luncher-group-desktop.png', fullPage: true });
-  await second.locator('#undo').click();
-  await second.waitForFunction(() => document.querySelectorAll('.week-row').length === 0);
+  assert.equal((await store.get(code)).events.length,2);
+  // A new group day unlocks the wheel without losing yesterday's journal.
+  testClockNow=new Date(testClockNow.getTime()+86400000);
+  await second.reload();await second.waitForFunction(()=>!document.querySelector('#spin').disabled);
+  assert.equal(await second.locator('.activity-row').count(),2);
   await first.goto(origin); assert.equal(await first.locator('.week-row').count(), 1);
   // Invalid links must never fall back to editable personal mode.
   await second.goto(origin + '/g/no-such-room'); await second.locator('.toast').waitFor();
@@ -116,7 +145,7 @@ try {
   await second.goto(roomUrl); await second.locator('.toast').waitFor();
   assert.equal(await second.locator('#spin').isDisabled(), true);
   assert.deepEqual(errors, []);
-  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, replacement, refresh, reload persistence, undo, mobile, theme, toast expiry/replacement/dismissal without layout or focus changes, and failed/offline room handling.');
+  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, locked choices, cancellable replacement, persistent change journal, next-day unlock, refresh, reload persistence, mobile, theme, toast expiry/replacement/dismissal without layout or focus changes, and failed/offline room handling.');
 } finally {
   await browser?.close();
   await app.close();

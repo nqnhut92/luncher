@@ -14,8 +14,9 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 
 - **Vòng quay chọn món:** chọn ngẫu nhiên trong các món phù hợp, với bộ lọc cơm, bún/mì, ăn nhẹ và ăn chay.
 - **Chế độ cá nhân:** lưu lịch sử ngay trên trình duyệt bằng `localStorage`.
-- **Nhóm ăn chung:** tạo nhóm một lần và chia sẻ link cố định. Ai có link cũng có thể xem, sửa tên nhóm, chốt, đổi hoặc bỏ chốt món trong ngày.
+- **Nhóm ăn chung:** tạo nhóm một lần và chia sẻ link cố định. Ai có link cũng có thể xem, sửa tên nhóm, chốt hoặc đổi món trong ngày.
 - **Tránh lặp trong tuần:** món đã chốt được loại khỏi các lần quay tiếp trong tuần, trừ khi bật tùy chọn cho phép lặp.
+- **Nhật ký thay đổi:** giữ lại từng lần chốt và đổi món, gồm thời gian, món cũ và món mới.
 - **Xử lý thao tác đồng thời:** lượt chốt từ dữ liệu cũ không tự ghi đè quyết định mới của nhóm.
 - **Giao diện linh hoạt:** hỗ trợ điện thoại, ghi nhớ chế độ sáng/tối, giảm chuyển động theo thiết bị và không có âm thanh.
 
@@ -24,7 +25,9 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 1. Nhập tên nhóm ở trang chính.
 2. Copy link `/g/<code>` được tạo và ghim trong nhóm chat.
 3. Quay thử để tìm món phù hợp. Việc quay diễn ra riêng trên từng máy, chưa thay đổi món của nhóm.
-4. Chốt món để lưu cho cả nhóm. Nếu hôm nay đã có món được chốt, nút đổi món sẽ thể hiện rõ việc thay lựa chọn chung.
+4. Chốt món để lưu cho cả nhóm. Vòng quay được khóa cho ngày đó.
+5. Muốn đổi, bấm **Đổi món hôm nay**. Món cũ vẫn được giữ cho tới khi chốt món mới; hủy đổi không thay đổi thực đơn.
+6. Mở **Lịch sử thay đổi** để xem các lần chốt/đổi cùng thời gian. Không còn thao tác xóa món bằng “Bỏ chốt”.
 
 Mã nhóm gồm sáu ký tự chữ/số, phân biệt hoa thường, ví dụ `/g/Ab3xY9`. Link UUID cũ không còn được hỗ trợ. Đổi tên nhóm không làm thay đổi link.
 
@@ -113,16 +116,18 @@ Kiểm thử trình duyệt sử dụng `/usr/bin/chromium` nếu có. Để dù
 npx playwright install chromium
 ```
 
-Kiểm thử tự động dùng cơ sở dữ liệu tương thích Postgres trong bộ nhớ, không thay đổi dữ liệu Neon. Các trường hợp kiểm thử gồm tách biệt dữ liệu giữa nhóm, xung đột khi ghi, đổi và bỏ chốt, tránh lặp trong tuần, giữ dữ liệu sau khi tải lại trang và xử lý lỗi. Kết nối API và Neon trên bản deploy cần được kiểm tra riêng sau khi triển khai.
+Kiểm thử tự động dùng cơ sở dữ liệu tương thích Postgres trong bộ nhớ, không thay đổi dữ liệu Neon. Các trường hợp kiểm thử gồm tách biệt dữ liệu giữa nhóm, xung đột khi ghi, khóa món đã chốt, hủy đổi món, nhật ký thay đổi, tránh lặp trong tuần, giữ dữ liệu sau khi tải lại trang và xử lý lỗi. Kết nối API và Neon trên bản deploy cần được kiểm tra riêng sau khi triển khai.
 
 ## Dữ liệu và quyền truy cập
 
 Xem [thiết kế cơ sở dữ liệu](docs/database-design.md) để tra sơ đồ quan hệ, các cột, ràng buộc, luồng ghi và quy trình chuyển dữ liệu.
 
 - `luncher_rooms` lưu UUID nội bộ, mã công khai sáu ký tự duy nhất, tên và phiên bản dữ liệu của nhóm.
+- `luncher_meal_events` giữ các lần chốt/đổi; món cũ không rõ giờ chốt được ghi nhãn là dữ liệu có sẵn khi bật nhật ký. Chưa ghi nhận danh tính người thao tác.
 - `luncher_meal_choices` lưu món đã chốt. Khóa chính `(room_id, meal_date)` bảo đảm mỗi nhóm chỉ có một món mỗi ngày.
 - Thao tác ghi SQL nguyên tử kiểm tra phiên bản nhóm trước khi nhận thay đổi. Server cũng kiểm tra ID món, ngày của nhóm và những món đã dùng trong tuần.
 - Link nhóm cấp cả quyền xem và chỉnh sửa. Không có chủ phòng, mật khẩu hoặc tài khoản để khôi phục. Chỉ chia sẻ link trong nhóm dự định và tránh đặt thông tin nhạy cảm trong tên nhóm.
+- Thực đơn và nhật ký cá nhân được lưu cùng nhau trong `luncher-personal-v2`; dữ liệu local cũ được chuyển sang mà không xóa lịch sử.
 - Lịch sử cá nhân nằm trên thiết bị, không tự chuyển vào nhóm, đồng bộ giữa thiết bị hoặc khôi phục sau khi xóa dữ liệu trình duyệt.
 - Khi yêu cầu nhóm thất bại, app không chuyển sang lưu local. Thao tác ghi không được tự thử lại vì yêu cầu hết thời gian chờ có thể đã được lưu trên server.
 

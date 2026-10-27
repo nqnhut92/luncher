@@ -26,3 +26,15 @@ html[data-theme=dark] .toast[data-type=success] .toast-icon{color:#b0ce9f}
 @keyframes toast-enter{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:650px){.toast{right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));left:16px;width:auto;max-width:none}.toast-message{flex:1}}
 @media(prefers-reduced-motion:reduce){.toast{animation:none}}
+.primary.is-locked:disabled{opacity:1;background:var(--soft);color:var(--muted);box-shadow:none}
+.change-banner{display:flex;align-items:center;gap:12px;margin-top:18px;padding:12px;border-radius:10px;background:var(--soft);font-size:11px;line-height:1.6;color:var(--muted)}
+.change-banner .text-button{font-size:11px;padding:4px 0}
+.activity-log{padding:18px 22px}
+.activity-log summary{cursor:pointer;font-size:13px;font-weight:600;line-height:1.6}
+.activity-log summary span{float:right;margin-left:10px;padding:0 7px;border-radius:5px;background:var(--soft);color:var(--muted);font-size:11px}
+.activity-list{max-height:260px;overflow:auto;margin-top:14px}
+.activity-row{border-top:1px solid var(--border);padding:12px 0}
+.activity-row small{display:block;font-size:10px;line-height:1.6;color:var(--muted)}
+.activity-row p{margin:5px 0;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.activity-list>p{font-size:12px;line-height:1.7}
+@media(max-width:400px){.change-banner{align-items:flex-start;flex-direction:column;gap:6px}.change-banner .text-button{margin-left:0}}

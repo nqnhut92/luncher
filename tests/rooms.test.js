@@ -26,16 +26,22 @@ test('schema is repeatable and preserves rooms', async () => {
   await db.exec(await readFile(new URL('../db/schema.sql', import.meta.url), 'utf8'));
   assert.equal((await store.get(id)).name, 'Hội cơm trưa');
 });
-test('rooms isolate history; confirm, explicit replacement and undo', async () => {
+test('rooms isolate history; confirm and replacement append complete journal entries', async () => {
   const a = await store.create('A'), b = await store.create('B');
   assert.equal(await choose(a, 0, 'com-tam'), true);
   assert.deepEqual((await store.get(a)).history, [{ foodId: 'com-tam', date: today }]);
   assert.deepEqual((await store.get(b)).history, []);
   assert.equal(await choose(a, 1, 'pho'), false, 'confirm never implicitly replaces');
   assert.equal(await choose(a, 1, 'pho', { replace: true }), true);
-  assert.equal(await store.undo({ id: a, revision: 1, today }), false, 'stale undo rejected');
-  assert.equal(await store.undo({ id: a, revision: 2, today }), true);
-  assert.deepEqual((await store.get(a)).history, []);
+  const room = await store.get(a);
+  assert.deepEqual(room.history, [{foodId:'pho',date:today}]);
+  assert.deepEqual(room.events.map(e=>[e.action,e.previousFoodId,e.foodId]),[
+    ['confirm',null,'com-tam'],['replace','com-tam','pho'],
+  ]);
+  assert.equal((await store.get(b)).events.length,0);
+  assert.ok(room.events.every(e=>Number.isFinite(Date.parse(e.occurredAt))));
+  assert.equal(await choose(a, 2, 'pho', {replace:true,repeat:true}),false, 'same-dish no-op rejected');
+  assert.deepEqual(await store.get(a),room);
 });
 test('two writers with same revision: only one commits, stale writer cannot overwrite', async () => {
   const id = await store.create('Race');
@@ -44,6 +50,7 @@ test('two writers with same revision: only one commits, stale writer cannot over
   const room = await store.get(id);
   assert.equal(room.revision, 1);
   assert.equal(room.history.length, 1);
+  assert.equal(room.events.length,1);
 });
 test('week exclusion enforced in DB, repeat override, new week and no version bump on rejection', async () => {
   const id = await store.create('Weekly');
@@ -114,6 +121,10 @@ test('migration assigns short codes without changing internal keys or history; o
     assert.equal(room.revision, 1);
     assert.equal((await query("SELECT is_nullable FROM information_schema.columns WHERE table_name = 'luncher_rooms' AND column_name = 'code'"))[0].is_nullable, 'NO');
     assert.deepEqual(room.history, [{ foodId: 'mi-quang', date: today }]);
+    assert.equal(room.events.length,1);assert.equal(room.events[0].action,'snapshot');
+    assert.equal(room.events[0].foodId,'mi-quang');
+    await legacy.exec(await readFile(new URL('../db/schema.sql', import.meta.url), 'utf8'));
+    assert.deepEqual(await migratedStore.get(room.id),room,'schema rerun never duplicates baseline events');
     assert.deepEqual(await migratedStore.get(room.id), room);
     await backfillRoomCodes(query);
     assert.deepEqual(await migratedStore.get(room.id), room, 'rerun preserves public link');
@@ -145,11 +156,59 @@ test('rename is revision-checked, validates names, and keeps history and link', 
   const stale = await request({ body: {action:'rename',id,revision:1,name:'Stale name'} });
   assert.equal(stale.code,409);
   assert.equal(stale.data.room.name,'Hội <b>ăn trưa</b>');
-  assert.equal(await store.undo({id,revision:1,today}),false);
+  assert.equal(await choose(id,1,'pho',{replace:true}),false);
+  assert.equal((await store.get(id)).events.length,1);
 });
 
 test('API only accepts six alphanumeric characters, not legacy UUIDs', async () => {
   for (const id of ['f75bfda7-b815-46bc-b3f9-dc237617c8a0', 'abc12', 'abc1234', 'abc_12']) {
     assert.equal((await request({method:'GET',query:{id}})).code,400);
   }
+});
+
+test('legacy undo requests cannot delete a confirmed meal or its journal', async () => {
+  const id=await store.create('No destructive undo');
+  await choose(id,0,'mi-quang');
+  const before=await store.get(id);
+  assert.equal((await request({body:{action:'undo',id,revision:1,today}})).code,400);
+  assert.deepEqual(await store.get(id),before);
+});
+
+test('journal insert failure rolls back the daily choice and room revision atomically', async () => {
+  const id=await store.create('Atomic journal');
+  await choose(id,0,'com-tam');
+  const before=await store.get(id);
+  await db.exec("ALTER TABLE luncher_meal_events ADD CONSTRAINT journal_failure_test CHECK (food_id <> 'pho') NOT VALID");
+  try {
+    await assert.rejects(choose(id,1,'pho',{replace:true}),error=>error.code==='23514');
+    assert.deepEqual(await store.get(id),before);
+  } finally {await db.exec('ALTER TABLE luncher_meal_events DROP CONSTRAINT journal_failure_test');}
+});
+
+test('user-supplied 09:37 confirmation time upgrades only the requested baseline once', async () => {
+  const isolated=new PGlite();
+  try {
+    const schema=await readFile(new URL('../db/schema.sql',import.meta.url),'utf8');
+    const base=schema.split('-- Additive migration:')[0];
+    await isolated.exec(base);
+    const requested='f75bfda7-b815-46bc-b3f9-dc237617c8a0';
+    const other='44444444-4444-4444-8444-444444444444';
+    for(const id of [requested,other]){
+      await isolated.query('INSERT INTO luncher_rooms (id,name,revision) VALUES ($1,$2,1)',[id,'Existing']);
+      await isolated.query('INSERT INTO luncher_meal_choices VALUES ($1,$2,$3)',[id,'2026-10-27','mi-quang']);
+    }
+    await isolated.exec(schema);
+    const migration=await readFile(new URL('../db/migrations/20261027-access-group-confirmation.sql',import.meta.url),'utf8');
+    await isolated.exec(migration);
+    const query=async(sql,params)=>(await isolated.query(sql,params)).rows;
+    const {backfillRoomCodes,legacyRoomCode}=await import('../server/room-codes.js');
+    await backfillRoomCodes(query);
+    const scopedStore=roomStore(query);
+    const room=await scopedStore.get(legacyRoomCode(requested));
+    assert.equal(room.events[0].action,'confirm');
+    assert.equal(room.events[0].occurredAt,'2026-10-27T02:37:00.000Z');
+    assert.equal((await scopedStore.get(legacyRoomCode(other))).events[0].action,'snapshot');
+    await isolated.exec(schema);await isolated.exec(migration);
+    assert.deepEqual(await scopedStore.get(room.id),room);
+  }finally{await isolated.close();}
 });

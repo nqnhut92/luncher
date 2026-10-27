@@ -42,7 +42,7 @@ export function createHandler(getStore, clock = () => new Date()) {
         const room = await (await getStore()).get(id);
         return room ? send(200, { room, today }) : send(404, { error: 'Không tìm thấy nhóm. Kiểm tra lại link nhé.' });
       }
-      if (!['confirm', 'replace', 'undo', 'rename'].includes(body.action) || !Number.isSafeInteger(body.revision) || body.revision < 0) {
+      if (!['confirm', 'replace', 'rename'].includes(body.action) || !Number.isSafeInteger(body.revision) || body.revision < 0) {
         return send(400, { error: 'Thao tác không hợp lệ.' });
       }
       if (['confirm', 'replace'].includes(body.action) && (!ids.has(body.foodId) || typeof body.repeat !== 'boolean')) {
@@ -56,8 +56,6 @@ export function createHandler(getStore, clock = () => new Date()) {
       const store = await getStore();
       const changed = body.action === 'rename'
         ? await store.rename({ id, revision: body.revision, name: body.name.trim() })
-        : body.action === 'undo'
-        ? await store.undo({ id, revision: body.revision, today })
         : await store.choose({ id, revision: body.revision, today, foodId: body.foodId,
           replace: body.action === 'replace', repeat: body.repeat });
       if (!changed) {
