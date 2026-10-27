@@ -57,6 +57,12 @@ The group page shows a QR code for the saved Grab URL. `/g/<code>` serves the ap
 
 The saved link is not reset automatically each day. Replace or clear it when an order ends. Luncher does not create Grab orders, track expiry, or collect individual orders. Sharing the group link also makes its saved Grab URL available to recipients and link-preview services.
 
+## Web Analytics
+
+Production builds initialize the official Vercel Web Analytics SDK once on eligible public homepage visits. Group/access links, every non-homepage route, query strings, fragments, and unsafe referrers are excluded. Browser Do Not Track and Global Privacy Control are honored. There are no custom events, Speed Insights, or session replay.
+
+See [Web Analytics setup and privacy](docs/vercel-analytics.md) for the filtering policy, local tests, and Vercel dashboard steps. Local validation does **not** confirm live event collection; dashboard enablement and real event arrival must be verified separately. No paid feature is enabled by this change.
+
 ## Stack
 
 | Layer | Technology |
@@ -133,7 +139,8 @@ Share group links from a **stable production domain**, rather than a deployment-
 
 ```sh
 npm test          # Calendar rules, API validation, and SQL behavior using PGlite
-npm run test:e2e  # Full app with two independent browser contexts and an isolated DB
+npm run test:e2e  # Full app with independent browser contexts and an isolated DB
+npm run test:analytics # Production SDK/filter integration with a test-only delivery fixture
 npm run build     # Frontend production build; no database access required
 npm run preview   # Preview the frontend build; does not serve the group API
 ```

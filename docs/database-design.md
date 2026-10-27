@@ -2,6 +2,10 @@
 
 Luncher uses Neon Postgres for shared groups. Personal history and theme preferences stay in browser storage and are not part of this schema.
 
+## Analytics boundary
+
+[Vercel Web Analytics](vercel-analytics.md) covers only eligible clean public-homepage pageviews. Group URLs, group identifiers/names, Grab order links, meal data, management links, and browser storage are excluded. The integration adds no database tables, columns, events, or server credentials; it does not turn recent-group shortcuts into a public directory.
+
 ## Entity relationships
 
 ```mermaid

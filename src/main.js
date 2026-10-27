@@ -1,4 +1,5 @@
 import './style.css';
+import {initializeAnalytics} from './analytics.js';
 import morphdom from 'morphdom';
 import {showToast} from './toast.js';
 import foods from './foods.json';
@@ -7,6 +8,7 @@ import {readPersonal, confirmPersonal} from './activity.js';
 import {RECENT_GROUPS_KEY, readRecentGroups, rememberGroup, updateRememberedGroup} from './recent-groups.js';
 import {roomRequest, escapeHtml} from './groups.js';
 import {icon} from './icons.js';
+initializeAnalytics();
 const app = document.querySelector('#app');
 let groupId = location.pathname.startsWith('/g/') ? location.pathname.split('/')[2] || 'invalid' : null;
 let group = null, groupToday = null, loading = Boolean(groupId), busy = false, refreshing = false, editingName = false, nameDraft = '';

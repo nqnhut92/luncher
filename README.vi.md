@@ -57,6 +57,12 @@ Trang nhóm hiện QR dẫn tới link Grab đã lưu. `/g/<code>` trả giao di
 
 Link đã lưu không tự đặt lại mỗi ngày. Hãy thay hoặc xóa khi đơn kết thúc. Luncher không tạo đơn Grab, kiểm tra hạn đơn hoặc gom đơn từng người. Chia sẻ link nhóm cũng cho người nhận và dịch vụ tạo preview khả năng truy cập link Grab đã lưu.
 
+## Web Analytics
+
+Bản build production khởi tạo Vercel Web Analytics một lần cho lượt mở homepage công khai đủ điều kiện. Link nhóm/quyền truy cập, mọi đường dẫn khác homepage, query string, fragment và referrer không an toàn đều bị loại. App tôn trọng Do Not Track và Global Privacy Control. Không thêm custom event, Speed Insights hay ghi lại phiên sử dụng.
+
+Xem [hướng dẫn Web Analytics bằng tiếng Anh](docs/vercel-analytics.md) để tra cách lọc dữ liệu, kiểm thử local và các bước trên dashboard Vercel. Kiểm thử local **không xác nhận** sự kiện thực đã được thu thập; cần kiểm tra riêng việc bật dịch vụ và sự kiện xuất hiện trên dashboard. Thay đổi này không bật tính năng trả phí.
+
 ## Công nghệ
 
 | Thành phần | Công nghệ |
@@ -133,7 +139,8 @@ Chia sẻ link nhóm từ **domain production cố định** thay vì URL previe
 
 ```sh
 npm test          # Kiểm tra lịch, API và truy vấn SQL bằng PGlite
-npm run test:e2e  # App đầy đủ với hai phiên trình duyệt độc lập và DB cô lập
+npm run test:e2e  # App đầy đủ với các phiên trình duyệt độc lập và DB cô lập
+npm run test:analytics # Kiểm tra SDK/filter production bằng bộ nhận giả lập chỉ dành cho test
 npm run build     # Build giao diện production, không cần kết nối DB
 npm run preview   # Xem bản build giao diện, không chạy API nhóm
 ```

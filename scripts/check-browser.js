@@ -26,6 +26,7 @@ try {
   const errors = [];
   for (const page of [first, second]) page.on('pageerror', error => errors.push(error.message));
   await first.goto(origin);
+  assert.equal(await first.locator('script[src*="/_vercel/insights/"]').count(),0,'development server must not initialize analytics');
   // Personal confirmation remains independent of shared-room data.
   await first.locator('#spin').click(); await first.locator('#confirm').click();
   assert.equal(await first.locator('.week-row.is-chosen').count(), 1);
