@@ -15,6 +15,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 - **Vòng quay chọn món:** chọn ngẫu nhiên trong các món phù hợp, với bộ lọc cơm, bún/mì, ăn nhẹ và ăn chay.
 - **Chế độ cá nhân:** lưu lịch sử ngay trên trình duyệt bằng `localStorage`.
 - **Nhóm ăn chung:** tạo nhóm một lần và chia sẻ link cố định. Ai có link cũng có thể xem, sửa tên nhóm, chốt hoặc đổi món trong ngày.
+- **Bố cục ổn định:** thực đơn có bảy dòng cố định; nhật ký tách riêng và cuộn bên trong, không kéo giãn khung vòng quay.
 - **Tránh lặp trong tuần:** món đã chốt được loại khỏi các lần quay tiếp trong tuần, trừ khi bật tùy chọn cho phép lặp.
 - **Nhật ký thay đổi:** giữ lại từng lần chốt và đổi món, gồm thời gian, món cũ và món mới.
 - **Xử lý thao tác đồng thời:** lượt chốt từ dữ liệu cũ không tự ghi đè quyết định mới của nhóm.
@@ -41,7 +42,7 @@ Bấm **Tải lại kết quả** để lấy thay đổi từ người khác. A
 
 | Thành phần | Công nghệ |
 | --- | --- |
-| Giao diện | JavaScript, CSS, Vite |
+| Giao diện | JavaScript, CSS, Vite, morphdom |
 | API | Vercel Functions |
 | Dữ liệu nhóm | Neon Postgres qua Neon serverless driver |
 | Sở thích và lịch sử cá nhân | `localStorage` trên trình duyệt |

@@ -15,6 +15,7 @@ The interface is in Vietnamese and supports light and dark themes.
 - **Meal wheel:** randomly select from the available dishes, with filters for rice, noodles, light meals, and vegetarian options.
 - **Personal mode:** keep meal history in the current browser using `localStorage`.
 - **Shared groups:** create a group once and share its permanent link. Everyone with the link can view, rename the group, confirm, or replace the day's choice.
+- **Stable layout:** a fixed seven-day weekly view and a separate, scrollable change journal keep long histories from stretching the wheel.
 - **Weekly variety:** confirmed dishes are excluded for the rest of the week unless repeats are explicitly enabled.
 - **Change journal:** confirmations and replacements retain a timestamped record of the previous and new dishes.
 - **Concurrent updates:** stale confirmations cannot silently overwrite a newer group decision.
@@ -41,7 +42,7 @@ Use **Refresh results** to retrieve another member's changes. Returning to the b
 
 | Layer | Technology |
 | --- | --- |
-| Frontend | JavaScript, CSS, Vite |
+| Frontend | JavaScript, CSS, Vite, morphdom |
 | API | Vercel Functions |
 | Shared persistence | Neon Postgres via the Neon serverless driver |
 | Personal preferences and history | Browser `localStorage` |
