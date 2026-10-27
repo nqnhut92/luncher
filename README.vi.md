@@ -16,12 +16,13 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 - **Chế độ cá nhân:** lưu lịch sử ngay trên trình duyệt bằng `localStorage`.
 - **Nhóm ăn chung:** tạo nhóm một lần và chia sẻ link cố định. Ai có link cũng có thể xem, sửa tên nhóm, chốt hoặc đổi món trong ngày.
 - **Bố cục ổn định:** thực đơn có bảy dòng cố định; nhật ký tách riêng và cuộn bên trong, không kéo giãn khung vòng quay.
+- **Ưu tiên món hôm nay:** khi đã chốt, thẻ món ăn hiện lên đầu và vòng quay thu nhỏ lại; danh sách món được thu gọn cho tới khi mở ra. Trong nhóm, thẻ đơn Grab nằm cạnh vòng quay, có mã QR và nút **Mở đơn Grab**.
 - **Tránh lặp trong tuần:** món đã chốt được loại khỏi các lần quay tiếp trong tuần, trừ khi bật tùy chọn cho phép lặp.
 - **Nhật ký thay đổi:** giữ lại từng lần chốt và đổi món, gồm thời gian, món cũ và món mới.
 - **Đơn nhóm Grab:** dán link đơn nhóm Grab (`https://…grab.com/…`) vào nhóm. Trang nhóm hiện mã QR, và khi chia sẻ link `/g/<code>` vào Zalo/Messenger/Slack, ảnh preview sẽ là mã QR đó (Open Graph).
 - **Xử lý thao tác đồng thời:** lượt chốt từ dữ liệu cũ không tự ghi đè quyết định mới của nhóm.
 - **Header cố định khi cuộn:** logo và nút đổi giao diện luôn hiện ở đầu màn hình. Đường phân cách chạy hết chiều ngang, nền bán trong suốt làm mờ nội dung phía dưới ở cả sáng/tối; trình duyệt không hỗ trợ blur dùng nền đặc.
-- **Giao diện linh hoạt:** hỗ trợ điện thoại, ghi nhớ chế độ sáng/tối, giảm chuyển động theo thiết bị và không có âm thanh.
+- **Giao diện linh hoạt:** hỗ trợ điện thoại, ghi nhớ chế độ sáng/tối, giảm chuyển động theo thiết bị và không có âm thanh. Giao diện theo phong cách Liquid Glass: nút dạng viên thuốc và thẻ trong mờ trên nền màu dịu; phần chứa chữ dùng lớp kính đặc hơn để vẫn đạt độ tương phản WCAG AA. Vùng bấm cao tối thiểu 44px, và các lớp kính chuyển sang nền đặc khi thiết bị bật giảm độ trong suốt.
 
 ## Cách dùng nhóm ăn chung
 
@@ -99,6 +100,14 @@ Server phát triển chạy cả Vite và API trên cổng `5173`.
 Chạy `npm run db:setup` cho cả DB mới lẫn DB hiện có. Lệnh này áp dụng [`db/schema.sql`](db/schema.sql), cấp mã công khai cho nhóm cũ và đặt ràng buộc mã không được rỗng. Chỉ chạy file SQL chưa hoàn tất bước chuyển dữ liệu. Có thể chạy lại lệnh setup mà vẫn giữ nguyên các bản ghi hiện có.
 
 Chuỗi kết nối là thông tin bí mật chỉ dùng phía server. Không commit hoặc đưa vào biến có tiền tố `VITE_`.
+
+### Xem thử không cần Neon
+
+```sh
+npm run dev:local
+```
+
+Lệnh này chạy đầy đủ app và API với cơ sở dữ liệu tạm trong bộ nhớ (PGlite), rồi in ra link của hai nhóm mẫu: một nhóm chưa chốt món hôm nay, một nhóm đã chốt và có link Grab giả lập. Đặt biến `PORT` nếu muốn dùng cổng khác. Dữ liệu mất khi tắt lệnh.
 
 ## Deploy lên Vercel
 

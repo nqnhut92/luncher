@@ -16,12 +16,13 @@ The interface is in Vietnamese and supports light and dark themes.
 - **Personal mode:** keep meal history in the current browser using `localStorage`.
 - **Shared groups:** create a group once and share its permanent link. Everyone with the link can view, rename the group, confirm, or replace the day's choice.
 - **Stable layout:** a fixed seven-day weekly view and a separate, scrollable change journal keep long histories from stretching the wheel.
+- **Today first:** once the day's meal is confirmed, the dish card leads and the wheel steps back; the full menu is collapsed until opened. In a group, the Grab order card sits beside the wheel with its QR code and an **Open Grab order** button.
 - **Weekly variety:** confirmed dishes are excluded for the rest of the week unless repeats are explicitly enabled.
 - **Change journal:** confirmations and replacements retain a timestamped record of the previous and new dishes.
 - **Grab group order:** paste a Grab group-order link (`https://…grab.com/…`) into the group. The group page shows its QR code, and sharing the `/g/<code>` link in chat apps renders that QR as the link preview image (Open Graph).
 - **Concurrent updates:** stale confirmations cannot silently overwrite a newer group decision.
 - **Sticky header:** the logo and theme switch stay visible while scrolling. A full-width divider and translucent, blurred background work in both themes, with an opaque fallback when backdrop filters are unavailable.
-- **Responsive design:** mobile layouts, persistent theme preferences, reduced-motion support, and no audio.
+- **Responsive design:** mobile layouts, persistent theme preferences, reduced-motion support, and no audio. The interface uses a Liquid Glass style: capsule controls and translucent cards over a soft color backdrop, with denser glass behind text so it keeps WCAG AA contrast. Buttons have touch targets of at least 44px, and surfaces become opaque when the device asks for reduced transparency.
 
 ## How shared groups work
 
@@ -99,6 +100,14 @@ The full development server serves Vite and the API together on port `5173`.
 Run `npm run db:setup` for both new and existing databases. It applies [`db/schema.sql`](db/schema.sql), assigns public codes to existing groups, and enforces non-null codes. Running the SQL file alone does not complete the data migration. Setup preserves existing records and is safe to rerun.
 
 Connection strings are server-only credentials. Never commit them or expose them through a `VITE_` variable.
+
+### Review without Neon
+
+```sh
+npm run dev:local
+```
+
+This serves the full app and API with an in-memory database (PGlite) and prints links to two demo groups: one without a meal today, and one with a confirmed meal and a synthetic Grab link. Set `PORT` to use another port. Data is discarded when the process stops.
 
 ## Deploy to Vercel
 

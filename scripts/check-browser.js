@@ -56,6 +56,11 @@ try {
   await first.locator('#spin').click(); await first.locator('#confirm').click();
   await first.locator('#change-meal').waitFor();
   const picked = await first.locator('.result h2').innerText();
+  // Confirmed day: the dish card leads, the menu stays collapsed, and wheel labels read upright.
+  assert.equal(await first.locator('.spin-panel.is-locked').count(), 1);
+  assert.equal(await first.locator('.menu-section').evaluate(el => el.open), false);
+  assert.equal(await first.locator('.wheel-label').evaluateAll(labels => labels.every(el =>
+    el.classList.contains('flip') === parseFloat(el.style.getPropertyValue('--angle')) < 180)), true);
   await second.locator('#confirm').click();
   await second.locator('.toast').waitFor();
   assert.equal(await second.locator('.result h2').innerText(), picked, 'conflict shows winner');
@@ -87,6 +92,9 @@ try {
   await second.reload(); await second.locator('#change-meal').waitFor();
   assert.equal(await second.locator('.result h2').innerText(), replacement);
   assert.equal(await second.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true);
+  const smallTargets = await second.evaluate(() => [...document.querySelectorAll('#app button, #app a.button, #app summary')]
+    .filter(el => el.getClientRects().length).filter(el => el.getBoundingClientRect().height < 44).map(el => el.id || el.className || el.textContent));
+  assert.deepEqual(smallTargets, [], 'mobile touch targets must be at least 44px tall');
   await second.locator('#theme').click();
   const theme = await second.locator('html').getAttribute('data-theme');
   await second.reload(); await second.locator('#change-meal').waitFor();

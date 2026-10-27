@@ -10,6 +10,7 @@
     "test": "node --test",
     "db:setup": "node --env-file-if-exists=.env.local scripts/setup-db.js",
     "dev:full": "node --env-file-if-exists=.env.local scripts/dev.js",
+    "dev:local": "node scripts/dev-local.js",
     "build:vercel": "npm run db:setup && npm run build",
     "test:e2e": "node scripts/check-browser.js"
   },

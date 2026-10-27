@@ -8,9 +8,8 @@ import { neonStore } from '../server/neon.js';
 
 // Same-origin local API + Vite; Vercel runs api/rooms.js itself in production.
 export async function startDevServer(apiHandler = handler, port = 5173, getStore = neonStore, imageHandler = qrHandler) {
-  const vite = await createViteServer({ server: { middlewareMode: true }, appType: 'spa' });
   const root = new URL('../index.html', import.meta.url);
-  const pageHandler = createPageHandler(getStore, async req => vite.transformIndexHtml(req.url, await readFile(root, 'utf8')));
+  let vite, pageHandler;
   const server = createHttpServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
     req.query = Object.fromEntries(url.searchParams);
@@ -38,6 +37,10 @@ export async function startDevServer(apiHandler = handler, port = 5173, getStore
       if (!res.writableEnded) res.status(500).json({ error: 'Không xử lý được yêu cầu.' });
     }
   });
+  // Hot reload shares the app's HTTP server, so several dev servers on different
+  // ports never compete for Vite's default standalone WebSocket port.
+  vite = await createViteServer({ server: { middlewareMode: true, hmr: { server } }, appType: 'spa' });
+  pageHandler = createPageHandler(getStore, async req => vite.transformIndexHtml(req.url, await readFile(root, 'utf8')));
   await new Promise(resolve => server.listen(port, '127.0.0.1', resolve));
   return { server, close: async () => { await new Promise(resolve => server.close(resolve)); await vite.close(); } };
 }
