@@ -68,8 +68,12 @@ html{scrollbar-gutter:stable;overflow-anchor:none}
 .grab-row{display:flex;align-items:center;gap:12px;margin-top:12px;min-width:0}.grab-row .text-button{margin-left:0;padding:0}.grab-row.has-link .text-button{margin-left:auto}.grab-row>div{min-width:0}.grab-row small{display:block;font-size:9px;font-weight:700;letter-spacing:1.2px;color:var(--muted);margin-bottom:4px}.grab-row a{display:block;font-size:12px;color:var(--accent);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.grab-qr{flex-shrink:0;width:64px;height:64px;border-radius:8px;border:1px solid var(--border);background:#fff;object-fit:cover}
 .group-bar .grab-form{justify-content:flex-start;align-items:center;margin-top:12px;min-width:0}.group-bar .grab-form input{flex:1 1 220px;min-width:0;max-width:420px;height:36px;padding:7px 10px}.grab-form .small-primary,.grab-form .chip{height:36px;padding:8px 12px;font-size:12px}
 @media(max-width:400px){.group-bar .grab-form input{flex-basis:100%;max-width:none}}
-/* Keep navigation visible without changing the header's place in the layout.
-   Extend the opaque background across the viewport without horizontal overflow. */
-header{position:sticky;top:0;z-index:20;background:var(--bg);box-shadow:0 0 0 100vmax var(--bg);clip-path:inset(0 -100vmax)}
+/* Full-width glass header, with navigation aligned to the main content. */
+header{position:sticky;top:0;z-index:20;display:block;max-width:none;margin:0;background:var(--bg);box-shadow:none;clip-path:none}
+.header-inner{display:flex;align-items:center;justify-content:space-between;max-width:1160px;height:100%;margin:0 auto}
+@supports ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+ header{background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(16px) saturate(140%);backdrop-filter:blur(16px) saturate(140%)}
+}
 html{scroll-padding-top:118px}
-@media(max-width:650px){html{scroll-padding-top:94px}}
+@media(max-width:1220px){.header-inner{margin-inline:30px}}
+@media(max-width:650px){.header-inner{margin-inline:20px}html{scroll-padding-top:94px}}

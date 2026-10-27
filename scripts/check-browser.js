@@ -176,6 +176,10 @@ try {
       assert.equal(await layoutPage.locator('.week-list').evaluate(el=>el.scrollHeight===el.clientHeight),true,'seven meals must fit without growing the weekly card');
       assert.equal(await layoutPage.locator('header').evaluate(el=>el.getBoundingClientRect().top),0,`header stays pinned at ${width}px in ${theme}`);
       assert.notEqual(await layoutPage.locator('header').evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)');
+      assert.equal(await layoutPage.locator('header').evaluate(el=>Math.abs(el.getBoundingClientRect().width-document.body.getBoundingClientRect().width)<1),true,'header divider spans the full page width outside the scrollbar gutter');
+      assert.equal(await layoutPage.locator('header').evaluate(el=>getComputedStyle(el).borderBottomWidth),'1px');
+      assert.match(await layoutPage.locator('header').evaluate(el=>getComputedStyle(el).backdropFilter),/blur\(16px\)/);
+      assert.equal(await layoutPage.locator('.header-inner').evaluate(el=>Math.abs(el.getBoundingClientRect().left-document.querySelector('main').getBoundingClientRect().left)<1),true,'header content stays aligned with main');
       assert.equal(await layoutPage.locator('#theme').evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),true,'sticky theme switch remains clickable');
       const closed=await geometry();
       await layoutPage.locator('.activity-log summary').click();await settle();
