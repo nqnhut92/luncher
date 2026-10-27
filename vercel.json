@@ -4,7 +4,7 @@
   "rewrites": [
     {
       "source": "/g/:id",
-      "destination": "/index.html"
+      "destination": "/api/group-page?id=:id"
     }
   ],
   "headers": [

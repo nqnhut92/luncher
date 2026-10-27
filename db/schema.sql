@@ -45,3 +45,7 @@ FROM luncher_meal_choices m JOIN luncher_rooms r ON r.id = m.room_id
 WHERE NOT EXISTS (SELECT 1 FROM luncher_meal_events e
   WHERE e.room_id = m.room_id AND e.meal_date = m.meal_date)
 ON CONFLICT (room_id, meal_date, room_revision) DO NOTHING;
+
+-- Optional Grab group-order link; shared previews render it as a QR code.
+ALTER TABLE luncher_rooms ADD COLUMN IF NOT EXISTS grab_url varchar(500)
+  CHECK (grab_url ~ '^https://');

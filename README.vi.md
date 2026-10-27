@@ -18,6 +18,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 - **Bố cục ổn định:** thực đơn có bảy dòng cố định; nhật ký tách riêng và cuộn bên trong, không kéo giãn khung vòng quay.
 - **Tránh lặp trong tuần:** món đã chốt được loại khỏi các lần quay tiếp trong tuần, trừ khi bật tùy chọn cho phép lặp.
 - **Nhật ký thay đổi:** giữ lại từng lần chốt và đổi món, gồm thời gian, món cũ và món mới.
+- **Đơn nhóm Grab:** dán link đơn nhóm Grab (`https://…grab.com/…`) vào nhóm. Trang nhóm hiện mã QR, và khi chia sẻ link `/g/<code>` vào Zalo/Messenger/Slack, ảnh preview sẽ là mã QR đó (Open Graph).
 - **Xử lý thao tác đồng thời:** lượt chốt từ dữ liệu cũ không tự ghi đè quyết định mới của nhóm.
 - **Giao diện linh hoạt:** hỗ trợ điện thoại, ghi nhớ chế độ sáng/tối, giảm chuyển động theo thiết bị và không có âm thanh.
 

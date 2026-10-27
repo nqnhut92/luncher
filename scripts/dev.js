@@ -1,16 +1,28 @@
 import { createServer as createHttpServer } from 'node:http';
 import { createServer as createViteServer } from 'vite';
+import { readFile } from 'node:fs/promises';
 import handler from '../api/rooms.js';
+import qrHandler from '../api/qr.js';
+import { createPageHandler } from '../server/preview.js';
+import { neonStore } from '../server/neon.js';
 
 // Same-origin local API + Vite; Vercel runs api/rooms.js itself in production.
-export async function startDevServer(apiHandler = handler, port = 5173) {
+export async function startDevServer(apiHandler = handler, port = 5173, getStore = neonStore, imageHandler = qrHandler) {
   const vite = await createViteServer({ server: { middlewareMode: true }, appType: 'spa' });
+  const root = new URL('../index.html', import.meta.url);
+  const pageHandler = createPageHandler(getStore, async req => vite.transformIndexHtml(req.url, await readFile(root, 'utf8')));
   const server = createHttpServer(async (req, res) => {
     const url = new URL(req.url, 'http://localhost');
+    req.query = Object.fromEntries(url.searchParams);
+    const group = url.pathname.match(/^\/g\/([^/]+)$/);
+    if (group) {
+      req.query = { id: group[1] };
+      return pageHandler(req, res).catch(() => { if (!res.writableEnded) { res.statusCode = 500; res.end(); } });
+    }
+    if (url.pathname === '/api/qr') return imageHandler(req, res);
     if (url.pathname !== '/api/rooms') return vite.middlewares(req, res);
     res.status = code => { res.statusCode = code; return res; };
     res.json = data => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(data)); };
-    req.query = Object.fromEntries(url.searchParams);
     try {
       let raw = '';
       for await (const chunk of req) {

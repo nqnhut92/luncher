@@ -6,6 +6,7 @@ import { existsSync } from 'node:fs';
 import { startDevServer } from './dev.js';
 import { roomStore } from '../server/rooms.js';
 import { createHandler } from '../server/handler.js';
+import { createQrHandler } from '../server/preview.js';
 import { roomToday } from '../server/calendar.js';
 
 // Real app + real SQL queries against isolated embedded Postgres. No Neon secrets.
@@ -13,7 +14,7 @@ const db = new PGlite();
 await db.exec(await readFile(new URL('../db/schema.sql', import.meta.url), 'utf8'));
 const store = roomStore(async (sql, params) => (await db.query(sql, params)).rows);
 let testClockNow = new Date();
-const app = await startDevServer(createHandler(() => store, () => testClockNow), 0);
+const app = await startDevServer(createHandler(() => store, () => testClockNow), 0, () => store, createQrHandler(() => store));
 const origin = `http://127.0.0.1:${app.server.address().port}`;
 const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || (existsSync('/usr/bin/chromium') ? '/usr/bin/chromium' : undefined);
 let browser;
@@ -100,6 +101,19 @@ try {
   await second.waitForFunction(() => document.querySelector('.group-bar h2')?.textContent === 'Hội ăn trưa mới');
   await first.locator('#refresh-group').click();
   await first.waitForFunction(() => document.querySelector('.group-bar h2')?.textContent === 'Hội ăn trưa mới');
+  // Grab link: invalid input is rejected, a saved link shows a QR and reaches link previews.
+  await second.locator('#edit-grab').click();
+  await second.locator('#grab-url').fill('https://evil.example/x');
+  await second.locator('#grab-form .small-primary').click();
+  await second.locator('.toast').waitFor();
+  assert.equal((await store.get(code)).grabUrl, null);
+  await second.locator('#grab-url').fill('https://r.grab.com/g/2-1-6-TEST');
+  await second.locator('#grab-form .small-primary').click();
+  await second.locator('.grab-qr').waitFor();
+  assert.equal(await second.locator('.grab-qr').evaluate(img => img.complete && img.naturalWidth === 1200), true);
+  const preview = await (await fetch(roomUrl)).text();
+  assert.match(preview, /<meta property="og:image" content="http:\/\/127\.0\.0\.1:\d+\/api\/qr\?id=/);
+  assert.match(preview, /<title>Hội ăn trưa mới · Luncher<\/title>/);
   assert.equal(second.url(), roomUrl);
   assert.equal(await second.locator('.result h2').innerText(), replacement);
   const headings = await second.locator('.side-card .eyebrow').allTextContents();

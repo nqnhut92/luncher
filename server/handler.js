@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { isRoomCode } from './room-codes.js';
 import { roomToday } from './calendar.js';
+import { normalizeGrabUrl } from './grab.js';
 const ids = new Set(JSON.parse(readFileSync(new URL('../src/foods.json', import.meta.url), 'utf8')).map(f => f.id));
 
 export function createHandler(getStore, clock = () => new Date()) {
@@ -42,7 +43,7 @@ export function createHandler(getStore, clock = () => new Date()) {
         const room = await (await getStore()).get(id);
         return room ? send(200, { room, today }) : send(404, { error: 'Không tìm thấy nhóm. Kiểm tra lại link nhé.' });
       }
-      if (!['confirm', 'replace', 'rename'].includes(body.action) || !Number.isSafeInteger(body.revision) || body.revision < 0) {
+      if (!['confirm', 'replace', 'rename', 'grab'].includes(body.action) || !Number.isSafeInteger(body.revision) || body.revision < 0) {
         return send(400, { error: 'Thao tác không hợp lệ.' });
       }
       if (['confirm', 'replace'].includes(body.action) && (!ids.has(body.foodId) || typeof body.repeat !== 'boolean')) {
@@ -51,11 +52,14 @@ export function createHandler(getStore, clock = () => new Date()) {
       if (body.action === 'rename' && (typeof body.name !== 'string' || !body.name.trim() || body.name.trim().length > 60)) {
         return send(400, { error: 'Tên nhóm cần từ 1 đến 60 ký tự.' });
       }
+      const grabUrl = body.action === 'grab' ? normalizeGrabUrl(body.grabUrl) : undefined;
+      if (grabUrl === false) return send(400, { error: 'Link Grab cần bắt đầu bằng https:// và thuộc grab.com.' });
       // The server's day wins; reject a page that was left open across midnight.
-      if (body.action !== 'rename' && body.today !== today) return send(409, { error: 'Đã sang ngày mới. Tải lại kết quả trước khi chốt nhé.' });
+      if (['confirm', 'replace'].includes(body.action) && body.today !== today) return send(409, { error: 'Đã sang ngày mới. Tải lại kết quả trước khi chốt nhé.' });
       const store = await getStore();
       const changed = body.action === 'rename'
         ? await store.rename({ id, revision: body.revision, name: body.name.trim() })
+        : body.action === 'grab' ? await store.setGrabUrl({ id, revision: body.revision, grabUrl })
         : await store.choose({ id, revision: body.revision, today, foodId: body.foodId,
           replace: body.action === 'replace', repeat: body.repeat });
       if (!changed) {
