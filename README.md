@@ -1,68 +1,127 @@
-# Luncher ✳
+# Luncher
 
-Chọn bữa trưa bằng vòng quay, cho riêng bạn hoặc cả nhóm. JavaScript + Vite, Vercel Functions và Neon Postgres. Không âm thanh, không tài khoản, không chủ phòng.
+**Less deciding. More lunch.**
 
-## Dùng thử
+Luncher is a lightweight lunch picker for individuals and groups. Spin the wheel, confirm a dish, and keep the week's meals varied without accounts or room administrators.
 
-- **Cá nhân** tại `/`: lịch sử lưu trong localStorage của trình duyệt.
-- **Nhóm**: nhập tên nhóm ở trang chính, nhận link cố định `/g/<uuid>`, copy và ghim trong chat. Không cần tạo lại mỗi ngày hay mỗi tuần.
-- Ai có link đều xem, chốt, đổi hoặc bỏ chốt được. Chia sẻ link chỉ với người cùng nhóm. Không có danh sách nhóm công khai.
-- Quay thử diễn ra riêng trên từng máy; chỉ nút **Chốt cho nhóm** mới lưu chung vào DB.
-- Mỗi nhóm có một món được chốt mỗi ngày. Khi đã chốt, nút **Đổi món đã chốt** thể hiện rõ việc thay lựa chọn chung.
-- Nếu hai người chốt cùng một phiên bản, chỉ một lượt thành công. Lượt còn lại nhận kết quả mới, không tự ghi đè.
-- Món đã chốt không quay lại trong tuần (thứ Hai–Chủ nhật), trừ khi bật **Cho phép lặp**. Danh sách hiển thị ngày đã chọn.
-- Lịch nhóm dùng **Asia/Ho_Chi_Minh** thống nhất, dù thành viên ở múi giờ khác. Cá nhân dùng giờ trên thiết bị.
-- Bấm **Tải lại kết quả** để lấy thay đổi từ người khác. App cũng tải lại khi quay về tab. Chưa có realtime/polling nền.
-- Light/dark, hỗ trợ mobile và giảm chuyển động. Danh sách mặc định ở `src/foods.json`.
+[Open Luncher](https://truanayangi.congtynhu.cc/)
 
-## Deploy Vercel + Neon
+The interface is in Vietnamese and supports light and dark themes.
 
-1. Connect Neon với project Vercel. Đảm bảo có **`DATABASE_URL`** (hoặc `POSTGRES_URL`) cho môi trường deploy tương ứng, ví dụ Production. Dùng connection string Postgres từ Neon; không dùng Neon API key. Không đặt tiền tố `VITE_`.
-2. Import repository, preset **Vite**, output **`dist`**, install command **`npm ci`**.
-3. `vercel.json` đặt build command **`npm run build:vercel`**. Nếu project có override build command trong dashboard, cập nhật cùng lệnh này.
-4. Build chạy `npm run db:setup` rồi build frontend. Schema ở `db/schema.sql` tạo hai bảng `luncher_rooms` và `luncher_meal_choices` nếu chưa có, không xóa dữ liệu cũ. Kết nối DB cần quyền tạo bảng ở lần triển khai đầu.
-5. Vercel tự deploy `api/rooms.js` thành server function; rewrite `/g/:id` giữ link nhóm hoạt động khi mở trực tiếp hoặc reload.
-6. Sau khi thay biến môi trường, redeploy. Mở app, tạo nhóm và mở link ở trình duyệt khác để kiểm tra chốt chung.
+## Features
 
-Dùng **domain production cố định** để tạo/share link nhóm. URL preview gắn với từng deployment không phù hợp làm link nhóm lâu dài. Production và Preview nên dùng Neon branch riêng để không lẫn dữ liệu thử nghiệm.
+- **Meal wheel:** randomly select from the available dishes, with filters for rice, noodles, light meals, and vegetarian options.
+- **Personal mode:** keep meal history in the current browser using `localStorage`.
+- **Shared groups:** create a group once and share its permanent link. Everyone with the link can view, confirm, replace, or undo the day's choice.
+- **Weekly variety:** confirmed dishes are excluded for the rest of the week unless repeats are explicitly enabled.
+- **Concurrent updates:** stale confirmations cannot silently overwrite a newer group decision.
+- **Responsive design:** mobile layouts, persistent theme preferences, reduced-motion support, and no audio.
 
-### Dữ liệu
+## How shared groups work
 
-- Danh sách món mặc định là JSON trong repo; lịch sử nhóm nằm trong Neon, không phải filesystem Vercel.
-- Khóa chính `(room_id, meal_date)` bảo đảm mỗi nhóm chỉ có một món/ngày.
-- Revision của nhóm + ghi SQL nguyên tử ngăn lượt chốt cũ ghi đè lượt mới; phía server kiểm tra món đã dùng trong tuần và ngày Việt Nam.
-- ID nhóm là UUID ngẫu nhiên. Quyền truy cập nằm ở link: không có vai trò, không có đăng nhập/khôi phục nếu mất link. Dữ liệu nhóm không được coi là dữ liệu riêng tư nhạy cảm.
-- Lỗi mạng không chuyển nhóm sang lưu local; app báo lỗi và cho tải lại. Không tự thử lại thao tác ghi, vì request timeout có thể đã được lưu ở server.
+1. Enter a group name on the home page.
+2. Copy the generated `/g/<uuid>` link and pin it in your group chat.
+3. Spin privately to explore options. Spinning alone does not change the group's meal.
+4. Confirm a dish to save it for everyone. If a meal is already confirmed, replacing it is a separate, explicitly labeled action.
 
-## Phát triển local
+Each group has one confirmed meal per day and its own history. Group links remain valid across days and weeks as long as the underlying database records are retained.
 
-Node.js 22.12+ (khuyến nghị Node 24) và npm:
+Weeks run from Monday through Sunday. Shared groups use **Asia/Ho_Chi_Minh** so all members follow the same calendar; personal mode uses the device's local date. Previous weeks' dishes become eligible again automatically.
+
+Use **Refresh results** to retrieve another member's changes. Returning to the browser tab also refreshes the group. Updates are not pushed in real time.
+
+## Stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | JavaScript, CSS, Vite |
+| API | Vercel Functions |
+| Shared persistence | Neon Postgres via the Neon serverless driver |
+| Personal preferences and history | Browser `localStorage` |
+| Tests | Node.js test runner, PGlite, Playwright |
+
+The default food catalog lives in [`src/foods.json`](src/foods.json). The frontend never connects directly to Postgres.
+
+## Local development
+
+### Requirements
+
+- Node.js **22.12 or later**; Node.js 24 is recommended.
+- npm.
+- A Neon database connection for shared-group development. Personal mode and automated tests do not require Neon.
+
+### Personal mode
 
 ```sh
 npm ci
-npm run dev            # Giao diện + chế độ cá nhân; không có API nhóm
+npm run dev
 ```
 
-Để chạy cả nhóm với Neon, copy `.env.example` thành **`.env.local`**, nhập connection string vào đó (file được gitignore), rồi:
+This starts the Vite frontend. Shared-group API requests require the full development server below.
+
+### Shared groups
+
+Copy [`.env.example`](.env.example) to `.env.local` and set `DATABASE_URL` to your Neon Postgres connection string. `POSTGRES_URL` is also supported as a fallback. Local environment files are ignored by Git.
 
 ```sh
 npm run db:setup
-npm run dev:full        # Vite + API cùng cổng 5173
+npm run dev:full
 ```
 
-Hoặc chạy nội dung `db/schema.sql` trực tiếp trong Neon SQL Editor. Không commit connection string hoặc gửi giá trị lên chat.
+The full development server serves Vite and the API together on port `5173`.
 
-## Kiểm tra
+Alternatively, execute [`db/schema.sql`](db/schema.sql) in the Neon SQL Editor. Schema setup creates missing tables and preserves existing records; it is safe to rerun for the current schema.
+
+Connection strings are server-only credentials. Never commit them or expose them through a `VITE_` variable.
+
+## Deploy to Vercel
+
+1. Import this repository into Vercel and connect a Neon database.
+2. Make `DATABASE_URL` available to the intended deployment environment, such as Production. Use a **Postgres connection string**, not a Neon management API key.
+3. Use the following project settings:
+
+   | Setting | Value |
+   | --- | --- |
+   | Framework preset | Vite |
+   | Install command | `npm ci` |
+   | Build command | `npm run build:vercel` |
+   | Output directory | `dist` |
+
+4. Deploy. The build command runs schema setup before building the frontend. The database role must have permission to create the application tables on the first deployment.
+5. Open the production site, create a group, and use a second browser session to verify shared confirmations.
+
+[`vercel.json`](vercel.json) defines the build command and the `/g/:id` rewrite. Vercel deploys [`api/rooms.js`](api/rooms.js) as a server function. If the dashboard overrides the build command, use the value above. Redeploy after changing environment variables.
+
+Share group links from a **stable production domain**, rather than a deployment-specific preview URL. Use separate Neon branches for Production and Preview to keep test data separate.
+
+## Validation
 
 ```sh
-npm test               # Logic cá nhân + API và truy vấn SQL trên Postgres nhúng (PGlite)
-npm run test:e2e       # Hai browser context độc lập, app thật + API + PGlite
-npm run build          # Build frontend, không yêu cầu DB
-npm run preview
+npm test          # Calendar rules, API validation, and SQL behavior using PGlite
+npm run test:e2e  # Full app with two independent browser contexts and an isolated DB
+npm run build     # Frontend production build; no database access required
+npm run preview   # Preview the frontend build; does not serve the group API
 ```
 
-E2E dùng Chromium có sẵn ở `/usr/bin/chromium`, hoặc đặt `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`; nếu chưa có browser thì chạy `npx playwright install chromium`. Các kiểm thử dùng DB cô lập trong bộ nhớ, không đụng dữ liệu Neon thực. Chúng không thay thế việc kiểm tra kết nối Neon/Vercel sau deploy.
+Browser tests use `/usr/bin/chromium` when available. To use another installation, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. If neither is available, install Playwright's browser:
 
-Chưa có thêm/sửa món cá nhân, nhập/xuất JSON, vote hoặc gom đơn từng người.
+```sh
+npx playwright install chromium
+```
 
-Lấy cảm hứng từ ý tưởng chọn món của truanayangi.com; mã, giao diện và dữ liệu được viết riêng, không dùng source hay tài nguyên của repo tham khảo.
+Automated tests use an in-memory Postgres-compatible database and do not modify Neon data. They cover group isolation, conflicting writes, explicit replacement, undo, weekly exclusions, persistence across page reloads, and failure handling. Verify the deployed API and Neon connection separately after deployment.
+
+## Data and access model
+
+- `luncher_rooms` stores group IDs, names, and revisions.
+- `luncher_meal_choices` stores confirmed dishes. A primary key on `(room_id, meal_date)` enforces one meal per group per day.
+- Atomic SQL writes check the room revision before accepting a change. The server also validates dish IDs, the group calendar, and weekly exclusions.
+- A group link grants both read and write access. There are no owners, passwords, or recovery accounts. Keep links within the intended group and avoid storing sensitive information in group names.
+- Personal history remains on the device. It is not copied into a group, synchronized across devices, or recovered after browser storage is cleared.
+- Failed group requests never fall back to local storage. Writes are not retried automatically, because a timed-out request may already have committed.
+
+The current version does not include custom food editing, JSON import/export, voting, individual order collection, or live push updates.
+
+## Inspiration
+
+Inspired by the lunch-selection concept at [truanayangi.com](https://truanayangi.com/). Luncher's implementation, interface, and food catalog were written independently; no source code or assets from the reference repository were reused.
