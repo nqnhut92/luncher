@@ -20,6 +20,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 - **Nhật ký thay đổi:** giữ lại từng lần chốt và đổi món, gồm thời gian, món cũ và món mới.
 - **Đơn nhóm Grab:** dán link đơn nhóm Grab (`https://…grab.com/…`) vào nhóm. Trang nhóm hiện mã QR, và khi chia sẻ link `/g/<code>` vào Zalo/Messenger/Slack, ảnh preview sẽ là mã QR đó (Open Graph).
 - **Xử lý thao tác đồng thời:** lượt chốt từ dữ liệu cũ không tự ghi đè quyết định mới của nhóm.
+- **Header cố định khi cuộn:** logo và nút đổi giao diện luôn hiện ở đầu màn hình, có nền che nội dung phía dưới trong cả hai chế độ sáng/tối.
 - **Giao diện linh hoạt:** hỗ trợ điện thoại, ghi nhớ chế độ sáng/tối, giảm chuyển động theo thiết bị và không có âm thanh.
 
 ## Cách dùng nhóm ăn chung

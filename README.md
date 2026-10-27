@@ -20,6 +20,7 @@ The interface is in Vietnamese and supports light and dark themes.
 - **Change journal:** confirmations and replacements retain a timestamped record of the previous and new dishes.
 - **Grab group order:** paste a Grab group-order link (`https://…grab.com/…`) into the group. The group page shows its QR code, and sharing the `/g/<code>` link in chat apps renders that QR as the link preview image (Open Graph).
 - **Concurrent updates:** stale confirmations cannot silently overwrite a newer group decision.
+- **Sticky header:** the logo and theme switch stay visible while scrolling, with an opaque background in both themes.
 - **Responsive design:** mobile layouts, persistent theme preferences, reduced-motion support, and no audio.
 
 ## How shared groups work

@@ -174,6 +174,9 @@ try {
       await layoutPage.evaluate(theme=>{document.documentElement.dataset.theme=theme;document.querySelector('.activity-log').open=false;},theme);
       await settle();await layoutPage.locator('.activity-log summary').scrollIntoViewIfNeeded();await settle();
       assert.equal(await layoutPage.locator('.week-list').evaluate(el=>el.scrollHeight===el.clientHeight),true,'seven meals must fit without growing the weekly card');
+      assert.equal(await layoutPage.locator('header').evaluate(el=>el.getBoundingClientRect().top),0,`header stays pinned at ${width}px in ${theme}`);
+      assert.notEqual(await layoutPage.locator('header').evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)');
+      assert.equal(await layoutPage.locator('#theme').evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),true,'sticky theme switch remains clickable');
       const closed=await geometry();
       await layoutPage.locator('.activity-log summary').click();await settle();
       assert.equal(await layoutPage.locator('.activity-list').evaluate(el=>el.clientHeight<=240&&el.scrollHeight>el.clientHeight),true,'long journal must scroll inside its bounded area');
