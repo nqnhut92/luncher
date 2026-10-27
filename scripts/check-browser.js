@@ -45,7 +45,7 @@ try {
   await first.locator('#undo').waitFor();
   const picked = await first.locator('.result h2').innerText();
   await second.locator('#confirm').click();
-  await second.locator('.notice').waitFor();
+  await second.locator('.toast').waitFor();
   assert.equal(await second.locator('.result h2').innerText(), picked, 'conflict shows winner');
   assert.equal(await second.locator('.week-row').count(), 1);
   assert.ok(!(await second.locator('.wheel-label b').allTextContents()).includes(picked));
@@ -77,22 +77,46 @@ try {
   assert.equal(await second.locator('.result h2').innerText(), replacement);
   const headings = await second.locator('.side-card .eyebrow').allTextContents();
   assert.ok(headings.every(text => !/^0[12] \//.test(text)));
+  // A new toast replaces the old one and gets a fresh three-second timer.
+  await first.evaluate(() => { navigator.clipboard.writeText = async () => {}; });
+  await first.clock.install();
+  await first.clock.pauseAt(new Date(Date.now() + 1000));
+  const beforeToast = await first.locator('.workspace').boundingBox();
+  await first.locator('#copy-group').click();
+  assert.match(await first.locator('.toast-message').innerText(), /Đã copy link nhóm/);
+  assert.equal((await first.locator('.workspace').boundingBox()).y, beforeToast.y);
+  await first.clock.fastForward(2000);
+  assert.equal(await first.locator('.toast').isVisible(), true);
+  await first.locator('#copy-group').click();
+  await first.clock.fastForward(1200);
+  assert.equal(await first.locator('.toast').isVisible(), true, 'previous timer cannot close a new toast');
+  await first.locator('#edit-name').click();
+  await first.locator('#rename-name').fill('Draft stays focused');
+  await first.clock.fastForward(1800);
+  assert.equal(await first.locator('.toast').isVisible(), false);
+  assert.equal(await first.locator('#rename-name').inputValue(), 'Draft stays focused');
+  assert.equal(await first.locator('#rename-name').evaluate(el => el === document.activeElement), true);
+  await first.locator('#cancel-rename').click();
+  await first.locator('#copy-group').click();
+  await first.locator('.toast-close').click();
+  assert.equal(await first.locator('.toast').isVisible(), false);
+  await first.clock.resume();
   await second.screenshot({ path: '/tmp/luncher-group-mobile.png', fullPage: true });
   await first.screenshot({ path: '/tmp/luncher-group-desktop.png', fullPage: true });
   await second.locator('#undo').click();
   await second.waitForFunction(() => document.querySelectorAll('.week-row').length === 0);
   await first.goto(origin); assert.equal(await first.locator('.week-row').count(), 1);
   // Invalid links must never fall back to editable personal mode.
-  await second.goto(origin + '/g/no-such-room'); await second.locator('.notice').waitFor();
+  await second.goto(origin + '/g/no-such-room'); await second.locator('.toast').waitFor();
   assert.equal(await second.locator('#spin').isDisabled(), true);
   assert.equal(await second.locator('#refresh-group').isEnabled(), true);
-  await second.locator('#refresh-group').click(); await second.locator('.notice').waitFor();
+  await second.locator('#refresh-group').click(); await second.locator('.toast').waitFor();
   // Offline group failure: keep group context, leave personal data untouched.
   await second.route('**/api/rooms*', route => route.abort());
-  await second.goto(roomUrl); await second.locator('.notice').waitFor();
+  await second.goto(roomUrl); await second.locator('.toast').waitFor();
   assert.equal(await second.locator('#spin').isDisabled(), true);
   assert.deepEqual(errors, []);
-  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, replacement, refresh, reload persistence, undo, mobile, theme and failed/offline room handling.');
+  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, replacement, refresh, reload persistence, undo, mobile, theme, toast expiry/replacement/dismissal without layout or focus changes, and failed/offline room handling.');
 } finally {
   await browser?.close();
   await app.close();
