@@ -197,6 +197,12 @@ When the user supplies the original time, an explicit scoped data migration can 
 
 Personal choices and journal entries are saved together as `{ history, events }` under `luncher-personal-v2` in `localStorage`. Existing `luncher-history-v1` entries are imported as labeled baselines. A single storage write saves each confirmation/replacement, while cancellation makes no change. These records do not enter Neon or acquire a member identity.
 
+### Recent group shortcuts
+
+`luncher-recent-groups-v1` stores up to 10 `{ id, name, lastVisited }` entries in browser `localStorage`. The `id` is a validated six-character public code; `lastVisited` is an epoch timestamp in milliseconds. This is a local shortcut list, not room membership or a public directory. The server has no endpoint for listing every group.
+
+Only successful visits create entries. Revisiting deduplicates and moves the group to the front; reads/renames can update an existing label without recreating a forgotten entry. Removing a shortcut never deletes a database room, choice, or journal event. Invalid/offline room loads are not added. Names are escaped when rendered.
+
 ## Source map
 
 | File | Responsibility |
@@ -205,6 +211,7 @@ Personal choices and journal entries are saved together as `{ history, events }`
 | [`scripts/setup-db.js`](../scripts/setup-db.js) | Neon schema setup, scoped data migrations, and code backfill |
 | [`db/migrations/`](../db/migrations/20261027-access-group-confirmation.sql) | Idempotent data patches applied in filename order |
 | [`src/activity.js`](../src/activity.js) | Personal journal persistence and legacy import |
+| [`src/recent-groups.js`](../src/recent-groups.js) | Browser-private recent group shortcuts, validation, and 10-item limit |
 | [`server/room-codes.js`](../server/room-codes.js) | Code generation, collision retries, existing-room migration |
 | [`server/rooms.js`](../server/rooms.js) | Parameterized SQL reads and atomic writes |
 | [`server/handler.js`](../server/handler.js) | Request validation, action dispatch, conflict responses |

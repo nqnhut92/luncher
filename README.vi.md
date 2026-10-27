@@ -38,6 +38,14 @@ Tuần bắt đầu từ thứ Hai và kết thúc vào Chủ nhật. Nhóm dùn
 
 Bấm **Tải lại kết quả** để lấy thay đổi từ người khác. App cũng tải lại dữ liệu nhóm khi bạn quay về tab. Hiện chưa có cập nhật đẩy theo thời gian thực.
 
+## Vào lại nhóm
+
+Homepage hiển thị tối đa **10 nhóm gần đây** mà bạn đã mở trên trình duyệt này. Bấm thẻ để vào lại, không cần nhớ hay nhập mã. Khi mở nhóm thành công, app lưu tên hiện tại; những lần đọc dữ liệu hoặc đổi tên sau đó cập nhật tên đã lưu.
+
+Desktop hiển thị tối đa hai hàng. Màn hình hẹp cuộn ngang trong danh sách, mobile chỉ có một hàng. Bỏ một thẻ chỉ xóa lối tắt trên trình duyệt; link, thực đơn và nhật ký trong Neon vẫn còn. Mở lại link sẽ thêm nhóm vào danh sách lại.
+
+Nhóm gần đây lưu bằng `localStorage`, không có danh sách nhóm công khai từ DB. Trình duyệt hoặc thiết bị khác có danh sách riêng; xóa dữ liệu trình duyệt sẽ mất các lối tắt này. Bạn vẫn nên ghim link trong nhóm chat.
+
 ## Công nghệ
 
 | Thành phần | Công nghệ |

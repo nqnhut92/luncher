@@ -4,11 +4,14 @@ import {showToast} from './toast.js';
 import foods from './foods.json';
 import {dateKey,weekStart,availableFoods,pickIndex,readState} from './logic.js';
 import {readPersonal, confirmPersonal} from './activity.js';
+import {RECENT_GROUPS_KEY, readRecentGroups, rememberGroup, updateRememberedGroup} from './recent-groups.js';
 import {roomRequest, escapeHtml} from './groups.js';
 const app = document.querySelector('#app');
 let groupId = location.pathname.startsWith('/g/') ? location.pathname.split('/')[2] || 'invalid' : null;
 let group = null, groupToday = null, loading = Boolean(groupId), busy = false, refreshing = false, editingName = false, nameDraft = '';
 let changingMeal = false, activityOpen = false, events = [];
+let recentGroups=[], recordedVisit=false, recentStorageFailed=false;
+try{recentGroups=readRecentGroups(localStorage.getItem(RECENT_GROUPS_KEY));}catch{}
 let history = [], category = 'all', repeat = false, result = null, spinning = false, rotation = 0;
 if (!groupId) {
  try {
@@ -45,6 +48,7 @@ function render() {
  const gradient=size?pool.map((f,i)=>`${colors[i%colors.length]} ${i*step}deg ${(i+1)*step}deg`).join(','):'#e6e0d7 0deg 360deg';
  const markup=`<header><a class="brand" href="/"><span class="brand-icon">✳</span> luncher<span class="brand-dot">.</span></a><div class="header-right"><span class="tiny">BỚT NGHĨ · ĂN NGON</span><button id="theme" class="icon-button" aria-label="Đổi giao diện sáng tối">${document.documentElement.dataset.theme==='dark'?'☀':'☾'}</button></div></header>
  <main><section class="intro"><div class="eyebrow"><span></span> CỨ ĐỂ CHIẾC BỤNG DẪN LỐI</div><h1>Trưa nay <br>ăn <em>gì nhỉ?</em></h1><p>Một vòng quay nhỏ. Một quyết định ngon lành.<br>Để Luncher chọn giùm bạn hôm nay.</p></section>
+ ${!groupId&&recentGroups.length?`<section class="recent-groups" aria-labelledby="recent-heading"><div class="recent-heading"><h2 id="recent-heading">Nhóm gần đây</h2><p>Những nhóm bạn đã mở trên trình duyệt này.</p></div><div class="recent-grid">${recentGroups.map(room=>`<article class="recent-card" id="recent-${room.id}"><a class="recent-link" href="/g/${room.id}"><span class="recent-icon" aria-hidden="true">🍱</span><span class="recent-name"><b title="${escapeHtml(room.name)}">${escapeHtml(room.name)}</b><small>Mở lại nhóm ↗</small></span></a><button type="button" class="recent-remove" data-forget-group="${room.id}" aria-label="Bỏ ${escapeHtml(room.name)} khỏi danh sách gần đây" title="Bỏ khỏi danh sách gần đây"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></article>`).join('')}</div></section>`:''}
  ${groupId ? `<section class="group-bar"><div><div class="eyebrow">NHÓM ĂN CHUNG · GIỜ VIỆT NAM</div>${group && editingName ? `<form id="rename-group" class="rename-form"><label class="sr-only" for="rename-name">Tên nhóm mới</label><input id="rename-name" name="name" value="${escapeHtml(nameDraft)}" maxlength="60" required ${blocked?'disabled':''}><button class="small-primary" ${blocked?'disabled':''}>${busy?'Đang lưu…':'Lưu tên'}</button><button id="cancel-rename" type="button" class="chip" ${busy?'disabled':''}>Hủy</button></form>` : `<div class="group-title"><h2>${group ? escapeHtml(group.name) : loading ? 'Đang mở nhóm…' : 'Chưa mở được nhóm'}</h2>${group ? `<button id="edit-name" class="edit-name" aria-label="Sửa tên nhóm" title="Sửa tên nhóm" ${blocked?'disabled':''}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.83 2.83 0 0 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3Z"/><path d="m15 5 4 4"/></svg></button>` : ''}</div>`}<p>Ai có link cũng có thể chốt và đổi món. Giữ link cho những người cùng ăn nhé.</p></div><div class="group-buttons"><button id="copy-group" class="chip" ${spinning || busy ? 'disabled' : ''}>Copy link nhóm</button><button id="refresh-group" class="chip" ${spinning || busy || loading ? 'disabled' : ''}>Tải lại kết quả</button><a class="text-button" href="/">Quay cá nhân</a></div></section>` : `<section class="group-bar"><div><div class="eyebrow">ĂN CHUNG, CHỐT CHUNG</div><h2>Trưa nay cả nhóm ăn gì?</h2><p>Tạo một link cố định. Cùng xem món đã chốt, cùng tránh lặp trong tuần.</p></div><form id="create-group"><label class="sr-only" for="group-name">Tên nhóm ăn trưa</label><input id="group-name" name="name" placeholder="Tên nhóm, ví dụ: Hội đói tầng 3" maxlength="60" required ${busy ? 'disabled' : ''}><button class="small-primary" ${busy ? 'disabled' : ''}>${busy ? 'Đang tạo…' : 'Tạo nhóm ↗'}</button></form></section>`}
  <section class="workspace"><div class="spin-panel"><div class="panel-top"><span class="eyebrow">VÒNG QUAY CHIẾC BỤNG</span><span class="count">${size} món đang chờ</span></div><div class="wheel-area"><div class="pointer"></div><div class="wheel" style="background:conic-gradient(${gradient});transform:rotate(${rotation}deg)">${pool.map((f,i)=>`<div class="wheel-label" style="--angle:${(i+.5)*step}deg"><span>${f.emoji}</span><b>${f.name}</b></div>`).join('')}</div><div class="hub">🍽️</div>${!size?'<div class="empty-wheel">Hết món phù hợp rồi!</div>':''}</div>
  <div class="spin-actions"><button class="primary ${locked?'is-locked':''}" id="spin" ${controlsBlocked||!size?'disabled':''}>${locked?'Hôm nay đã chốt ✓':spinning?'Đang chọn món ngon…':'✳  '+(result?'Quay món khác':'Quay đi, đói rồi!')}</button><span class="hint">${repeat?'Đang cho phép lặp món trong tuần':'Không lặp món đã chốt trong tuần'}</span></div>
@@ -66,6 +70,7 @@ function render() {
   },
  });
  document.querySelector('#theme').onclick=()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('luncher-theme',theme)}catch{}document.querySelector('#theme').textContent=theme==='dark'?'☀':'☾';};
+ document.querySelectorAll('[data-forget-group]').forEach(button=>button.onclick=()=>forgetGroup(button.dataset.forgetGroup));
  document.querySelector('#spin').onclick=spin;
  document.querySelectorAll('[data-category]').forEach(b=>b.onclick=()=>{category=b.dataset.category;result=null;rotation=0;render()});
  document.querySelector('#repeat').onchange=e=>{repeat=e.target.checked;result=null;rotation=0;render()};
@@ -107,6 +112,7 @@ function spin() {
 }
 function applyGroup(data) {
  group=data.room; groupToday=data.today; events=group.events||[];changingMeal=false;
+ recordRecentGroup(group);
  if(groupId!==group.id){groupId=group.id;window.history.replaceState(null,'','/g/'+groupId);}
  history=readState(JSON.stringify(group.history),foods.map(f=>f.id));
  result=null; rotation=0;
@@ -156,6 +162,23 @@ async function renameGroup(event) {
  catch(error){if(error.data?.room)applyGroup(error.data);showToast(connectionError(error),'error');}
  finally{busy=false;render();if(!editingName)document.querySelector('#edit-name')?.focus({preventScroll:true});}
 }
+function recordRecentGroup(room){
+ try{
+  const raw=localStorage.getItem(RECENT_GROUPS_KEY), saved=readRecentGroups(raw);
+  recentGroups=recordedVisit?updateRememberedGroup(saved,room):rememberGroup(saved,room);
+  const next=JSON.stringify(recentGroups);if(next!==raw)localStorage.setItem(RECENT_GROUPS_KEY,next);
+  recordedVisit=true;
+ }catch{if(!recentStorageFailed){recentStorageFailed=true;showToast('Không lưu được nhóm gần đây trên thiết bị này. Bạn vẫn có thể dùng link nhóm.','error');}}
+}
+function forgetGroup(id){
+ try{
+  recentGroups=readRecentGroups(localStorage.getItem(RECENT_GROUPS_KEY)).filter(room=>room.id!==id);
+  localStorage.setItem(RECENT_GROUPS_KEY,JSON.stringify(recentGroups));
+  render();
+  (document.querySelector('.recent-link')||document.querySelector('#group-name'))?.focus({preventScroll:true});
+  showToast('Đã bỏ khỏi nhóm gần đây. Link nhóm vẫn dùng được.');
+ }catch{showToast('Không cập nhật được danh sách nhóm gần đây.','error');}
+}
 async function copyGroup() {
  try {await navigator.clipboard.writeText(location.origin+'/g/'+groupId);showToast('Đã copy link nhóm. Gửi vào chat rồi ghim lại nhé!','success');}
  catch {showToast('Copy link từ thanh địa chỉ để gửi cho nhóm nhé.');}
@@ -163,4 +186,4 @@ async function copyGroup() {
 render();
 if(groupId) refreshGroup();
 // Re-evaluate day/week boundaries when returning to the tab.
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!spinning&&!busy){if(groupId){if(!editingName)refreshGroup();}else{changingMeal=false;result=null;render()}}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!spinning&&!busy){if(groupId){if(!editingName)refreshGroup();}else{try{recentGroups=readRecentGroups(localStorage.getItem(RECENT_GROUPS_KEY));}catch{}changingMeal=false;result=null;render()}}});

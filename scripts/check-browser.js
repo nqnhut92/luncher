@@ -197,9 +197,49 @@ try {
   await second.reload();await second.waitForFunction(()=>!document.querySelector('#spin').disabled);
   assert.equal(await second.locator('.activity-row').count(),2);
   await first.goto(origin); assert.equal(await first.locator('.week-row.is-chosen').count(), 1);
+  // Recent groups are remembered only on this browser after a successful visit.
+  const recent=first.locator(`.recent-link[href="/g/${code}"]`);
+  assert.equal(await recent.count(),1);
+  assert.equal(await recent.locator('b').innerText(),'Hội ăn trưa mới');
+  await recent.click();await first.waitForFunction(()=>document.querySelector('.group-title h2')?.textContent==='Hội ăn trưa mới');
+  await first.goto(origin);
+  await first.locator(`[data-forget-group="${code}"]`).click();
+  assert.equal(await first.locator('.recent-card').count(),0);
+  assert.equal((await store.get(code)).name,'Hội ăn trưa mới','forgetting must not delete the group');
+  await first.goto(roomUrl);await first.waitForFunction(()=>document.querySelector('.group-title h2')?.textContent==='Hội ăn trưa mới');
+  await first.goto(origin);assert.equal(await first.locator('.recent-card').count(),1);
+  const cleanContext=await browser.newContext({reducedMotion:'reduce'});
+  const home=await cleanContext.newPage();const homeApiCalls=[];
+  home.on('request',req=>{if(req.url().includes('/api/rooms'))homeApiCalls.push(req.url());});
+  await home.goto(origin);
+  assert.equal(await home.locator('.recent-card').count(),0,'another browser must not receive a public directory');
+  await home.evaluate(()=>localStorage.setItem('luncher-recent-groups-v1',JSON.stringify(Array.from({length:12},(_,i)=>({
+    id:'R'+String(i).padStart(5,'0'),name:i===0?'<b>Nhóm ăn trưa</b>':'Nhóm ăn trưa có một cái tên khá dài để kiểm tra '+i,lastVisited:Date.now()-i,
+  })))));
+  await home.reload();assert.equal(await home.locator('.recent-card').count(),10);
+  assert.equal(await home.locator('.recent-name b b').count(),0,'saved names render as text');
+  for(const width of[1440,800,390]){
+    await home.setViewportSize({width,height:900});
+    for(const theme of['light','dark']){
+      await home.evaluate(theme=>{document.documentElement.dataset.theme=theme;},theme);
+      assert.equal(await home.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,`recent groups overflow at ${width}px`);
+      const rows=await home.locator('.recent-card').evaluateAll(cards=>new Set(cards.map(c=>Math.round(c.getBoundingClientRect().top))).size);
+      assert.ok(rows<=(width<=650?1:2),'recent groups must stay within the planned number of rows');
+      if(width<=1100)assert.equal(await home.locator('.recent-grid').evaluate(el=>el.scrollWidth>el.clientWidth),true,'narrow layouts use a contained horizontal scroller');
+      assert.equal(await home.locator('.recent-name b').first().evaluate(el=>getComputedStyle(el).textOverflow),'ellipsis');
+      const name=await home.locator('.recent-name b').first().boundingBox(),remove=await home.locator('.recent-remove').first().boundingBox();
+      assert.ok(name.x+name.width<=remove.x,'remove button must not cover the group name');
+    }
+  }
+  await home.screenshot({path:'/tmp/luncher-recent-mobile.png',fullPage:true});
+  await home.setViewportSize({width:1440,height:1000});
+  await home.screenshot({path:'/tmp/luncher-recent-desktop.png',fullPage:true});
+  assert.deepEqual(homeApiCalls,[],'homepage must not fetch or publish a database group directory');
+  await cleanContext.close();
   // Invalid links must never fall back to editable personal mode.
   await second.goto(origin + '/g/no-such-room'); await second.locator('.toast').waitFor();
   assert.equal(await second.locator('#spin').isDisabled(), true);
+  assert.equal(await second.evaluate(()=>JSON.parse(localStorage.getItem('luncher-recent-groups-v1')).some(g=>g.id==='no-such-room')),false);
   assert.equal(await second.locator('#refresh-group').isEnabled(), true);
   await second.locator('#refresh-group').click(); await second.locator('.toast').waitFor();
   // Offline group failure: keep group context, leave personal data untouched.
@@ -207,7 +247,7 @@ try {
   await second.goto(roomUrl); await second.locator('.toast').waitFor();
   assert.equal(await second.locator('#spin').isDisabled(), true);
   assert.deepEqual(errors, []);
-  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, locked choices, cancellable replacement, persistent change journal, next-day unlock, refresh, reload persistence, mobile, theme, stable sidebar/wheel geometry at desktop/tablet/mobile in both themes, DOM/scroll/focus preservation, real spin continuity, toast expiry/replacement/dismissal without layout or focus changes, and failed/offline room handling.');
+  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, locked choices, cancellable replacement, persistent change journal, next-day unlock, refresh, reload persistence, mobile, theme, stable sidebar/wheel geometry at desktop/tablet/mobile in both themes, DOM/scroll/focus preservation, real spin continuity, toast expiry/replacement/dismissal without layout or focus changes, browser-private recent groups, renamed labels, forget/revisit, bounded 10-group layouts, and failed/offline room handling.');
 } finally {
   await browser?.close();
   await app.close();

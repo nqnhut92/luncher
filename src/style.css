@@ -48,3 +48,20 @@ html{scrollbar-gutter:stable;overflow-anchor:none}
 
 .history-section{margin-top:24px;min-width:0}
 @media(max-width:650px){.activity-row{display:block}.activity-row p{margin:6px 0}.activity-log{padding:18px 20px}}
+/* Recent groups are private to this browser; the list is ready before first paint. */
+.recent-groups{margin-bottom:28px;min-width:0}
+.recent-heading{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+.recent-heading h2{font-size:18px}
+.recent-heading p{color:var(--muted);font-size:11px;line-height:1.6}
+.recent-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.recent-card{position:relative;min-width:0;border:1px solid var(--border);border-radius:13px;background:var(--card);box-shadow:var(--shadow)}
+.recent-link{display:flex;align-items:center;gap:12px;min-height:80px;padding:16px 44px 16px 16px;border-radius:13px;color:var(--ink);text-decoration:none;transition:background .18s}
+.recent-link:hover{background:var(--soft)}
+.recent-icon{font-size:25px;flex-shrink:0}
+.recent-name{min-width:0}
+.recent-name b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;font-weight:600}
+.recent-name small{display:block;margin-top:6px;font-size:10px;color:var(--muted)}
+.recent-remove{position:absolute;top:10px;right:8px;display:grid;place-items:center;width:30px;height:30px;padding:0;border:0;border-radius:7px;background:transparent;color:var(--muted)}
+.recent-remove:hover{background:var(--soft);color:var(--accent)}
+@media(max-width:1100px){.recent-grid{grid-template-columns:none;grid-template-rows:repeat(2,auto);grid-auto-flow:column;grid-auto-columns:230px;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding-bottom:7px;scrollbar-width:thin}.recent-card{scroll-snap-align:start}}
+@media(max-width:650px){.recent-heading{align-items:flex-start;flex-direction:column;gap:5px}.recent-grid{grid-template-columns:none;grid-template-rows:auto;grid-auto-flow:column;grid-auto-columns:82%;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x proximity;padding-bottom:7px;scrollbar-width:thin}.recent-card{scroll-snap-align:start}.recent-link{min-height:76px}}

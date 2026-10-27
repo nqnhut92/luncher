@@ -38,6 +38,14 @@ Weeks run from Monday through Sunday. Shared groups use **Asia/Ho_Chi_Minh** so 
 
 Use **Refresh results** to retrieve another member's changes. Returning to the browser tab also refreshes the group. Updates are not pushed in real time.
 
+## Return to a group
+
+The home page shows up to **10 recently visited groups** from this browser. Open a card to return to its group; no code entry is required. A successful visit saves the current name, and subsequent reads or renames update that saved label.
+
+Desktop displays at most two rows. Narrow screens use a contained horizontal scroller, with one row on mobile. Removing a card only forgets the local shortcut; the group's link, meals, and journal remain in Neon. Opening the link again adds it back.
+
+Recent groups are stored in `localStorage`, not a public database directory. Another browser or device starts with its own list, and clearing browser data removes these shortcuts. Keep the shared link in your group chat as well.
+
 ## Stack
 
 | Layer | Technology |
