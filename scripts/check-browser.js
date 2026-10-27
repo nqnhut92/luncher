@@ -28,7 +28,17 @@ try {
   await first.goto(origin);
   assert.equal(await first.locator('script[src*="/_vercel/insights/"]').count(),0,'development server must not initialize analytics');
   // Personal confirmation remains independent of shared-room data.
-  await first.locator('#spin').click(); await first.locator('#confirm').click();
+  await first.locator('#slot-lever').click(); await first.locator('#confirm').waitFor();
+  const centeredFood=await first.locator('.reel-row').evaluateAll(rows=>{
+    const window=document.querySelector('.slot-window').getBoundingClientRect();
+    return rows.find(row=>{const rect=row.getBoundingClientRect();return Math.abs((rect.top+rect.bottom-window.top-window.bottom)/2)<1;})?.innerText;
+  });
+  assert.equal(centeredFood?.replace(/\s+/g,' ').trim(),await first.locator('.result h2').innerText(),'the centered reel dish matches the chosen result');
+  await first.locator('.menu-section summary').click();
+  assert.equal(await first.locator('.food-card').count(),8);
+  assert.equal(await first.locator('.food-card .food-art').count(),8);
+  await first.locator('.menu-section summary').click();
+  await first.locator('#confirm').click();
   assert.equal(await first.locator('.week-row.is-chosen').count(), 1);
   assert.equal(await first.locator('#spin').isDisabled(),true);
   assert.equal(await first.locator('#undo').count(),0);
@@ -57,16 +67,16 @@ try {
   await first.locator('#spin').click(); await first.locator('#confirm').click();
   await first.locator('#change-meal').waitFor();
   const picked = await first.locator('.result h2').innerText();
-  // Confirmed day: the dish card leads, the menu stays collapsed, and wheel labels read upright.
+  // Confirmed day: the dish card leads, the menu stays collapsed, and the reel keeps a fixed window.
   assert.equal(await first.locator('.spin-panel.is-locked').count(), 1);
   assert.equal(await first.locator('.menu-section').evaluate(el => el.open), false);
-  assert.equal(await first.locator('.wheel-label').evaluateAll(labels => labels.every(el =>
-    el.classList.contains('flip') === parseFloat(el.style.getPropertyValue('--angle')) < 180)), true);
+  assert.equal(await first.locator('.slot-window').evaluate(el=>el.clientHeight),336);
+  assert.equal(await first.locator('#slot-lever').isDisabled(),true);
   await second.locator('#confirm').click();
   await second.locator('.toast').waitFor();
   assert.equal(await second.locator('.result h2').innerText(), picked, 'conflict shows winner');
   assert.equal(await second.locator('.week-row.is-chosen').count(), 1);
-  assert.ok(!(await second.locator('.wheel-label b').allTextContents()).includes(picked));
+  assert.ok(!(await second.locator('.reel-row b').allTextContents()).includes(picked));
   // Confirmed choices stay locked; cancelling a replacement never deletes them.
   assert.equal(await second.locator('#spin').isDisabled(),true);
   assert.equal(await second.locator('#undo').count(),0);
@@ -190,6 +200,8 @@ try {
       assert.match(await layoutPage.locator('header').evaluate(el=>getComputedStyle(el).backdropFilter),/blur\(16px\)/);
       assert.equal(await layoutPage.locator('.header-inner').evaluate(el=>Math.abs(el.getBoundingClientRect().left-document.querySelector('main').getBoundingClientRect().left)<1),true,'header content stays aligned with main');
       assert.equal(await layoutPage.locator('#theme').evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),true,'sticky theme switch remains clickable');
+      assert.equal(await layoutPage.locator('.slot-lever').evaluate(el=>el.getBoundingClientRect().left>=document.querySelector('.slot-window').getBoundingClientRect().right),true,'lever assembly stays outside the reel window');
+      assert.equal(await layoutPage.locator('#spin').evaluate(el=>Boolean(el.closest('.slot-machine'))),true,'spin button belongs to the cabinet base');
       const closed=await geometry();
       await layoutPage.locator('.activity-log summary').click();await settle();
       assert.equal(await layoutPage.locator('.activity-list').evaluate(el=>el.clientHeight<=240&&el.scrollHeight>el.clientHeight),true,'long journal must scroll inside its bounded area');

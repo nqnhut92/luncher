@@ -8,7 +8,7 @@ export function weekStart(date = new Date()) {
 }
 export function availableFoods(foods, history, category = 'all', repeat = false, date = new Date()) {
   const used = new Set(history.filter(h => h.date >= weekStart(date) && h.date <= dateKey(date)).map(h => h.foodId));
-  return foods.filter(f => (category === 'all' || f.type === category) && (repeat || !used.has(f.id)));
+  return foods.filter(f => f.active !== false && (category === 'all' || f.type === category) && (repeat || !used.has(f.id)));
 }
 export function confirmFood(history, foodId, date = new Date()) {
   const today = dateKey(date);

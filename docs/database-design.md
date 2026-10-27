@@ -68,6 +68,8 @@ The composite primary key `(room_id, meal_date)` permits **one confirmed dish pe
 
 `food_id` is validated by the API against the JSON catalog; it has no database foreign key because there is no `foods` table. Keep existing food IDs stable when editing the catalog so saved history remains readable.
 
+Catalog entries with `active: false` remain in `src/foods.json` for historical lookup and backwards-compatible API ID validation, but are excluded from the current frontend menu and eligibility pool. The eight active choices reuse stable existing IDs where applicable; new IDs are `banh-canh-cua`, `mi-hoanh-thanh`, and `bun-moc`. Illustration indices are presentation metadata only. No stored choices, events, schema, or browser keys are rewritten.
+
 ### `luncher_meal_events`
 
 | Column | Type | Rules and purpose |

@@ -9,3 +9,9 @@ test('repeat override and filters; exhausted category stays empty',()=>{const h=
 test('only confirmation counts and replacing today preserves other days',()=>{const h=[{foodId:'pho',date:'2026-10-25'},{foodId:'rice',date:'2026-10-26'}];assert.deepEqual(confirmFood(h,'pho',monday),[h[0],{foodId:'pho',date:'2026-10-26'}])});
 test('read persisted history validates shape, dates and food IDs',()=>{assert.deepEqual(readState('broken',['rice']),[]);assert.deepEqual(readState(JSON.stringify([{foodId:'rice',date:'2026-02-30'},{foodId:'unknown',date:'2026-10-26'},{foodId:'rice',date:'2026-10-26'}]),['rice']),[{foodId:'rice',date:'2026-10-26'}])});
 test('picker handles empty and boundary indices',()=>{assert.equal(pickIndex(0),-1);assert.equal(pickIndex(12,()=>0),0);assert.equal(pickIndex(12,()=>.99999),11)});
+
+test('retired catalog entries remain readable but never enter the spin pool',()=>{
+ const catalog=[{id:'old',type:'rice',active:false},{id:'new',type:'rice'}];
+ assert.deepEqual(availableFoods(catalog,[],'all',true,monday),[catalog[1]]);
+ assert.deepEqual(readState(JSON.stringify([{foodId:'old',date:'2026-10-26'}]),catalog.map(f=>f.id)),[{foodId:'old',date:'2026-10-26'}]);
+});

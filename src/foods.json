@@ -1,14 +1,107 @@
 [
-{"id":"com-tam","name":"Cơm tấm","emoji":"🍛","type":"rice"},
-{"id":"pho","name":"Phở bò","emoji":"🍜","type":"noodle"},
-{"id":"banh-mi","name":"Bánh mì","emoji":"🥖","type":"light"},
-{"id":"bun-thit","name":"Bún thịt nướng","emoji":"🥢","type":"noodle"},
-{"id":"com-ga","name":"Cơm gà","emoji":"🍗","type":"rice"},
-{"id":"bun-bo","name":"Bún bò Huế","emoji":"🍲","type":"noodle"},
-{"id":"com-chay","name":"Cơm chay","emoji":"🥗","type":"veg"},
-{"id":"mi-quang","name":"Mì Quảng","emoji":"🍜","type":"noodle"},
-{"id":"banh-cuon","name":"Bánh cuốn","emoji":"🥟","type":"light"},
-{"id":"com-chien","name":"Cơm chiên","emoji":"🍚","type":"rice"},
-{"id":"salad","name":"Salad rau củ","emoji":"🥬","type":"veg"},
-{"id":"bun-chay","name":"Bún chay","emoji":"🌱","type":"veg"}
+  {
+    "id": "bun-bo",
+    "name": "Bún bò",
+    "emoji": "🍲",
+    "type": "noodle",
+    "art": 0
+  },
+  {
+    "id": "bun-thit",
+    "name": "Bún chả / Bún thịt nướng",
+    "emoji": "🥢",
+    "type": "noodle",
+    "art": 1
+  },
+  {
+    "id": "com-ga",
+    "name": "Cơm gà",
+    "emoji": "🍗",
+    "type": "rice",
+    "art": 2
+  },
+  {
+    "id": "banh-canh-cua",
+    "name": "Bánh canh cua",
+    "emoji": "🦀",
+    "type": "noodle",
+    "art": 3
+  },
+  {
+    "id": "mi-quang",
+    "name": "Mì Quảng",
+    "emoji": "🍜",
+    "type": "noodle",
+    "art": 4
+  },
+  {
+    "id": "com-tam",
+    "name": "Cơm tấm",
+    "emoji": "🍛",
+    "type": "rice",
+    "art": 5
+  },
+  {
+    "id": "mi-hoanh-thanh",
+    "name": "Mì hoành thánh",
+    "emoji": "🥟",
+    "type": "noodle",
+    "art": 6
+  },
+  {
+    "id": "bun-moc",
+    "name": "Bún mọc",
+    "emoji": "🍲",
+    "type": "noodle",
+    "art": 7
+  },
+  {
+    "id": "pho",
+    "name": "Phở bò",
+    "emoji": "🍜",
+    "type": "noodle",
+    "active": false
+  },
+  {
+    "id": "banh-mi",
+    "name": "Bánh mì",
+    "emoji": "🥖",
+    "type": "light",
+    "active": false
+  },
+  {
+    "id": "com-chay",
+    "name": "Cơm chay",
+    "emoji": "🥗",
+    "type": "veg",
+    "active": false
+  },
+  {
+    "id": "banh-cuon",
+    "name": "Bánh cuốn",
+    "emoji": "🥟",
+    "type": "light",
+    "active": false
+  },
+  {
+    "id": "com-chien",
+    "name": "Cơm chiên",
+    "emoji": "🍚",
+    "type": "rice",
+    "active": false
+  },
+  {
+    "id": "salad",
+    "name": "Salad rau củ",
+    "emoji": "🥬",
+    "type": "veg",
+    "active": false
+  },
+  {
+    "id": "bun-chay",
+    "name": "Bún chay",
+    "emoji": "🌱",
+    "type": "veg",
+    "active": false
+  }
 ]

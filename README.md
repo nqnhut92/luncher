@@ -12,7 +12,7 @@ The interface is in Vietnamese and supports light and dark themes.
 
 ## Features
 
-- **Meal wheel:** randomly select from the available dishes, with filters for rice, noodles, light meals, and vegetarian options.
+- **Vertical food reel:** a slot-machine picker shows three rows with horizontal names and matching food illustrations. Use the spin button or side lever (also keyboard accessible). It slows down onto the selected dish; reduced-motion mode skips the animation. Filters cover rice and noodles. Food pictures stay left while names are centered in the remaining space; Bún chả / Bún thịt nướng uses two fixed lines. The cabinet has a recessed brass-trimmed reel, an integrated base button, and a separate side lever with a visible axle; clicking the lever animates its arm before the reel settles.
 - **Personal mode:** keep meal history in the current browser using `localStorage`.
 - **Shared groups:** create a group once and share its permanent link. Everyone with the link can view, rename the group, confirm, or replace the day's choice.
 - **Stable layout:** a fixed seven-day weekly view and a separate, scrollable change journal keep long histories from stretching the wheel.
@@ -74,6 +74,8 @@ See [Web Analytics setup and privacy](docs/vercel-analytics.md) for the filterin
 | Tests | Node.js test runner, PGlite, Playwright |
 
 The default food catalog lives in [`src/foods.json`](src/foods.json). The frontend never connects directly to Postgres.
+
+The current menu has eight choices: Bún bò, Bún chả / Bún thịt nướng (one combined choice), Cơm gà, Bánh canh cua, Mì Quảng, Cơm tấm, Mì hoành thánh, and Bún mọc. The generated illustrations are bundled in `public/images/food-atlas.png`; no image-generation request runs while using the app. Catalog entries marked `active: false` are hidden from new spins and the menu, but remain available for reading saved meals and journals. Existing IDs are preserved; older clients can still confirm legacy catalog IDs through the API.
 
 ## Local development
 

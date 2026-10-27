@@ -203,3 +203,55 @@ html[data-theme=dark] .wheel{border-color:rgba(255,255,255,.12);box-shadow:0 18p
  :root,html[data-theme=dark]{--glass:var(--card);--glass-strong:var(--card)}
 }
 @media(prefers-reduced-motion:reduce){.button,.chip,.icon-button,.primary,.small-primary,.button-primary{transition:none}.button:hover:not(:disabled),.chip:hover:not(:disabled),.icon-button:hover,.button-primary:hover:not(:disabled),.small-primary:hover:not(:disabled),.primary:hover:not(:disabled){transform:none}}
+
+/* One vertical reel keeps the menu readable regardless of catalog size. */
+.food-art{display:inline-block;width:72px;height:72px;flex:0 0 auto;background-image:url('/images/food-atlas.png');background-repeat:no-repeat;background-size:400% 200%;background-position:var(--art-x) var(--art-y);vertical-align:middle}
+.machine-stage{position:relative;width:100%;max-width:500px;margin:30px auto 22px;padding:0 48px 12px 0;isolation:isolate}
+.machine-stage:after{content:'';position:absolute;bottom:0;left:5%;right:8%;height:18px;border-radius:50%;background:#4f331b30;filter:blur(10px);z-index:-1}
+.slot-machine{position:relative;margin:0;padding:22px 20px 18px;border:5px solid transparent;border-radius:54px 54px 28px 28px;background:linear-gradient(115deg,#fffdf4 0%,#f0e4cc 40%,#faf1df 68%,#d8c49f 100%) padding-box,linear-gradient(100deg,#8b5c29 0%,#f7dca3 3%,#fff6cf 5%,#bd8b45 8%,#f0cf90 48%,#b88b45 94%,#fff0b7 97%,#865423 100%) border-box;box-shadow:inset 3px 2px 1px #fffdf2,inset -5px 0 9px #92704538,0 7px 0 #9c7e52,0 10px 0 #d6bc8a,0 16px 24px #5d3e252e}
+.slot-machine:before,.slot-machine:after{content:'';position:absolute;bottom:-14px;width:36px;height:10px;border-radius:0 0 7px 7px;background:linear-gradient(90deg,#8c622e,#f3d79e,#ab7b37);box-shadow:0 3px 3px #54381935;z-index:-1}
+.slot-machine:before{left:25px}.slot-machine:after{right:25px}
+.slot-title{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;margin:-7px -4px 12px;padding:19px 12px 17px;border:3px solid transparent;border-radius:48% 48% 14px 14px / 22% 22% 14px 14px;background:linear-gradient(180deg,#ce6939,#a34120) padding-box,linear-gradient(150deg,#895324,#ffe8b2 30%,#a46c2b 60%,#f6d998) border-box;color:#fff3da;text-align:center;font-size:15px;font-weight:750;letter-spacing:1.1px;text-shadow:0 2px 1px #63311b80;box-shadow:0 2px 0 #fff9e0,inset 0 2px 3px #f7b17b90,0 4px 6px #5a3f2225}
+.slot-title>span{font-size:16px;color:#f5d18d;text-shadow:0 1px 1px #703a18}
+.slot-count{display:flex;align-items:center;justify-content:center;gap:13px;width:max-content;max-width:100%;margin:0 auto 16px;padding:6px 14px;border:1px solid #c5a36d;border-radius:9px;background:linear-gradient(#fff8e8,#e4d5b8);box-shadow:inset 0 1px 1px #fff,0 1px 1px #fff8ea;color:#706447;font-size:12px;font-weight:600}
+.slot-count i{width:5px;height:5px;border-radius:50%;background:linear-gradient(120deg,#fff1c5,#94642b);box-shadow:0 1px 1px #77512760;flex-shrink:0}
+.slot-window{height:348px;position:relative;overflow:hidden;border:6px solid transparent;border-radius:25px;background:linear-gradient(#fff5e4,#fdf2e1) padding-box,linear-gradient(125deg,#785024 0%,#d4ab63 8%,#fff0b4 15%,#9b6b30 26%,#edd39c 54%,#855720 80%,#ffe6a5 96%) border-box;box-shadow:0 1px 0 2px #fff7e7,0 -2px 5px #81613b33;isolation:isolate}
+.slot-window:after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,#372819a8 0%,#4a36234d 12%,transparent 35%,transparent 65%,#4a36234d 88%,#372819a8 100%);box-shadow:inset 6px 0 12px #47301c26,inset -6px 0 12px #47301c26;z-index:2}
+.slot-window .wheel{width:100%;height:auto;border:0;outline:0;border-radius:0;background:none;box-shadow:none;overflow:visible;position:relative;transition:none;will-change:transform}
+.slot-machine.is-spinning .wheel{transition:transform 4.2s cubic-bezier(.12,.64,.13,1)}
+.reel-row{height:112px;display:flex;align-items:center;gap:12px;padding:8px 15px;box-sizing:border-box;border-bottom:1px solid #baa28026;color:#332b25;background:linear-gradient(90deg,#c8b69b12,#fff9ec60 40%,#c8b69b12)}
+.reel-row .food-art{width:104px;height:104px;filter:drop-shadow(0 3px 2px #593c2020)}
+.reel-row b{font-size:22px;line-height:1.23;letter-spacing:-.5px;overflow-wrap:anywhere}
+.slot-selection{position:absolute;top:112px;height:112px;left:0;right:0;border:2px solid #b7562b;border-radius:17px;pointer-events:none;z-index:3;box-shadow:inset 0 1px 1px #fff8db,0 0 12px #b84f1d16}
+.slot-selection:before,.slot-selection:after{content:'';position:absolute;top:40px;border-top:13px solid transparent;border-bottom:13px solid transparent;filter:drop-shadow(0 1px 1px #5e301c80)}
+.slot-selection:before{left:0;border-left:13px solid #bc542b}.slot-selection:after{right:0;border-right:13px solid #bc542b}
+.slot-lever{position:absolute;right:0;top:100px;width:54px;height:244px;border:0;background:transparent;padding:0;overflow:visible;opacity:1;cursor:pointer}
+.slot-lever svg{display:block;width:100%;height:244px;overflow:visible;filter:drop-shadow(2px 4px 2px #5c3d252e)}
+.slot-lever:before{display:none}.slot-lever span{display:none}
+.slot-lever:hover:not(:disabled),.slot-lever:active:not(:disabled){transform:none}
+.lever-arm{transform-origin:35px 196px;transition:transform .25s cubic-bezier(.2,.8,.3,1)}
+.slot-lever:hover:not(:disabled) .lever-arm{transform:rotate(6deg)}
+.machine-stage.is-spinning .lever-arm{animation:lever-pull .65s cubic-bezier(.3,.1,.3,1)}
+@keyframes lever-pull{0%,100%{transform:rotate(0)}45%{transform:rotate(28deg) scaleY(.78)}}
+.slot-lever:disabled{cursor:default;filter:saturate(.7)}
+.machine-controls{padding-top:19px;margin:0 -2px;position:relative}
+.machine-controls:before{content:'';position:absolute;top:8px;left:-8px;right:-8px;border-top:1px solid #c5ad7c;border-bottom:1px solid #fff9e9;height:3px}
+.machine-controls .spin-actions{gap:12px}
+.machine-controls .primary{width:100%;min-width:0;min-height:64px;padding:10px 12px;border:4px solid transparent;border-radius:19px;background:linear-gradient(180deg,#de7d47,#bc5128 55%,#aa411f) padding-box,linear-gradient(145deg,#89602e,#ffe7ae 30%,#ac7735 65%,#f9dfa4) border-box;color:#fff4e1;box-shadow:inset 0 2px 1px #ffcea3b0,inset 0 -4px 0 #88381985,0 3px 0 #806035,0 5px 0 #fff4d8,0 7px 10px #5d3f2530;font-size:17px;font-weight:750;letter-spacing:.5px;text-shadow:0 1px 1px #5a2d20}
+.machine-controls .hint{font-size:11px;color:#77694f;text-align:center;line-height:1.6}
+.slot-caption{text-align:center;color:#897956;font-size:10px;padding:6px 0 0;line-height:1.5;letter-spacing:.2px}
+.slot-empty{position:absolute;inset:0;display:grid;place-content:center;text-align:center;padding:20px;color:#63503c;font-size:14px;line-height:1.8;z-index:4;background:#fff8eb}
+.result-emoji .food-art{width:88px;height:88px}.week-emoji .food-art{width:30px;height:30px}.week-emoji{width:30px}.food-card>span:first-child .food-art{width:64px;height:64px}.food-card{min-width:0}.food-card>div{min-width:0}
+.spin-panel.is-locked .slot-machine{opacity:.65}.spin-panel.is-locked .result-emoji .food-art{width:112px;height:112px}
+html[data-theme=dark] .slot-machine{background:linear-gradient(115deg,#474035,#302b24 45%,#3e362a 75%,#24211c) padding-box,linear-gradient(100deg,#71502e,#d7b574 5%,#856334 10%,#c1a06a 90%,#e8cb8e 97%,#71502e) border-box;box-shadow:inset 2px 2px 1px #ffffff23,inset -5px 0 9px #0003,0 7px 0 #614d32,0 10px 0 #8b734c,0 16px 24px #0005}
+html[data-theme=dark] .slot-count{background:linear-gradient(#5d5140,#3e362b);color:#e4d3b3;border-color:#8b714c;box-shadow:inset 0 1px 1px #ffffff28}
+html[data-theme=dark] .machine-controls .hint,html[data-theme=dark] .slot-caption{color:#c7b79a}
+@media(max-width:900px) and (min-width:651px){.machine-stage{padding-right:40px}.slot-machine{padding:18px 9px 14px;border-radius:36px 36px 24px 24px}.slot-title{font-size:10px;letter-spacing:.3px;padding-inline:7px}.slot-title>span{font-size:11px}.slot-count{font-size:10px;padding-inline:8px;gap:8px}.reel-row{padding:8px 7px;gap:5px}.reel-row .food-art{width:68px;height:68px}.reel-row b{font-size:16px}.slot-lever{right:0;width:45px}.slot-lever svg{width:100%}.machine-controls .primary{font-size:13px}.result-emoji .food-art{width:64px;height:64px}}
+@media(max-width:650px){.machine-stage{padding-right:39px;margin-top:25px}.slot-machine{padding:19px 12px 16px;border-width:4px;border-radius:42px 42px 25px 25px}.slot-title{padding:16px 7px 14px;font-size:11px;letter-spacing:.6px;gap:5px}.slot-title>span{font-size:12px}.slot-count{font-size:11px;padding:6px 12px;margin-bottom:14px}.slot-lever{right:0;top:108px;width:43px}.slot-lever svg{width:100%}.reel-row{padding:8px 9px;gap:6px}.reel-row .food-art{width:82px;height:82px}.reel-row b{font-size:18px}.machine-controls .primary{font-size:14px;gap:6px}.result{flex-wrap:wrap}.result-text{flex:1;min-width:130px}.food-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.food-card{flex-direction:column;align-items:flex-start}.food-card>span:first-child .food-art{width:88px;height:88px}.spin-panel.is-locked .result-emoji .food-art{width:80px;height:80px}}
+@media(max-width:360px){.machine-stage{padding-right:35px}.slot-machine{padding-inline:8px}.slot-title{font-size:10px;letter-spacing:0}.reel-row .food-art{width:64px;height:64px}.reel-row b{font-size:16px}.slot-lever{width:39px}.slot-lever svg{width:100%}.machine-controls .primary{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.slot-window .wheel,.lever-arm{transition:none!important;animation:none!important}}
+
+/* Reserve a consistent picture column; center names in the remaining column. */
+.reel-row .food-art{width:32%;height:auto;max-width:104px;aspect-ratio:1}
+.reel-row .reel-name{flex:1;min-width:0;text-align:center;container-type:inline-size}
+.reel-name-line{display:block;white-space:nowrap;font-size:clamp(11px,13cqi,22px);line-height:1.4;letter-spacing:-.3px}

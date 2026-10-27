@@ -12,7 +12,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 
 ## Tính năng
 
-- **Vòng quay chọn món:** chọn ngẫu nhiên trong các món phù hợp, với bộ lọc cơm, bún/mì, ăn nhẹ và ăn chay.
+- **Máy quay món dọc:** ô quay kiểu máy jackpot hiện ba hàng, tên món nằm ngang và có hình minh họa đồng bộ. Bấm quay hoặc bấm cần bên cạnh (hỗ trợ bàn phím) để chọn món; chuyển động chậm dần rồi dừng ở món được chọn. Chế độ giảm chuyển động bỏ qua hoạt ảnh. Có bộ lọc cơm và bún/mì. Hình món nằm bên trái, tên căn giữa trong phần còn lại; Bún chả / Bún thịt nướng luôn hiện đúng hai dòng trong ô quay. Thân máy có ô quay lõm viền đồng, nút quay nằm trên bệ và cụm cần gạt riêng bên hông với ổ trục rõ ràng; bấm cần sẽ tạo chuyển động gạt trước khi ô quay dừng.
 - **Chế độ cá nhân:** lưu lịch sử ngay trên trình duyệt bằng `localStorage`.
 - **Nhóm ăn chung:** tạo nhóm một lần và chia sẻ link cố định. Ai có link cũng có thể xem, sửa tên nhóm, chốt hoặc đổi món trong ngày.
 - **Bố cục ổn định:** thực đơn có bảy dòng cố định; nhật ký tách riêng và cuộn bên trong, không kéo giãn khung vòng quay.
@@ -74,6 +74,8 @@ Xem [hướng dẫn Web Analytics bằng tiếng Anh](docs/vercel-analytics.md) 
 | Kiểm thử | Node.js test runner, PGlite, Playwright |
 
 Danh sách món mặc định nằm trong [`src/foods.json`](src/foods.json). Giao diện không kết nối trực tiếp tới Postgres.
+
+Thực đơn hiện có tám lựa chọn: Bún bò, Bún chả / Bún thịt nướng (gộp một lựa chọn), Cơm gà, Bánh canh cua, Mì Quảng, Cơm tấm, Mì hoành thánh và Bún mọc. Bộ hình minh họa được tạo sẵn và đóng gói tại `public/images/food-atlas.png`; app không gọi tạo ảnh khi sử dụng. Món có `active: false` được ẩn khỏi lượt quay mới và thực đơn nhưng vẫn dùng để đọc các bữa ăn và nhật ký đã lưu. ID cũ được giữ nguyên; phiên bản app cũ vẫn có thể chốt ID món cũ qua API.
 
 ## Phát triển local
 
