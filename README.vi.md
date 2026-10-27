@@ -12,7 +12,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 
 ## Tính năng
 
-- **Máy quay món dọc:** ô quay kiểu máy jackpot hiện ba hàng, tên món nằm ngang và có hình minh họa đồng bộ. Bấm quay hoặc bấm cần bên cạnh (hỗ trợ bàn phím) để chọn món; chuyển động chậm dần rồi dừng ở món được chọn. Chế độ giảm chuyển động bỏ qua hoạt ảnh. Có bộ lọc cơm và bún/mì. Hình món nằm bên trái, tên căn giữa trong phần còn lại; Bún chả / Bún thịt nướng luôn hiện đúng hai dòng trong ô quay. Thân máy có ô quay lõm viền đồng, nút quay nằm trên bệ và cụm cần gạt riêng bên hông với ổ trục rõ ràng; bấm cần sẽ tạo chuyển động gạt trước khi ô quay dừng.
+- **Máy quay món dọc:** ô quay kiểu máy jackpot hiện ba hàng, tên món nằm ngang và có hình minh họa đồng bộ. Bấm quay hoặc bấm cần bên cạnh (hỗ trợ bàn phím) để chọn món; chuyển động chậm dần rồi dừng ở món được chọn. Chế độ giảm chuyển động bỏ qua hoạt ảnh. Có bộ lọc cơm và bún/mì. Hình món nằm bên trái, tên căn giữa trong phần còn lại; Bún chả / Bún thịt nướng luôn hiện đúng hai dòng trong ô quay. Thân máy có ô quay lõm viền đồng, nút quay nằm trên bệ và cụm cần gạt riêng bên hông với ổ trục rõ ràng; bấm cần sẽ tạo chuyển động gạt gọn trong khoảng bên hông trước khi ô quay dừng. Cần trở về thẳng đứng và giữ nguyên khi con trỏ còn nằm trên cần hoặc sau thao tác chạm.
 - **Chế độ cá nhân:** lưu lịch sử ngay trên trình duyệt bằng `localStorage`.
 - **Nhóm ăn chung:** tạo nhóm một lần và chia sẻ link cố định. Ai có link cũng có thể xem, sửa tên nhóm, chốt hoặc đổi món trong ngày.
 - **Bố cục ổn định:** thực đơn có bảy dòng cố định; nhật ký tách riêng và cuộn bên trong, không kéo giãn khung vòng quay.

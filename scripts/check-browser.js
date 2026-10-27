@@ -232,6 +232,27 @@ try {
   await layoutPage.locator('.activity-log summary').click();
   await layoutPage.locator('#confirm').waitFor({timeout:7000});
   assert.equal(await layoutPage.evaluate(()=>window.originalWheel===document.querySelector('.wheel')),true,'spin completion must not recreate the animated wheel');
+  // Keep the pointer on the knob through spin completion: hover must not tilt it.
+  const leverPage=await normalContext.newPage();
+  await leverPage.goto(origin);
+  for(const width of [320,390,1440]){
+    await leverPage.setViewportSize({width,height:900});
+    await leverPage.locator('#slot-lever').scrollIntoViewIfNeeded();
+    const knob=leverPage.locator('.lever-arm ellipse').nth(1);
+    await knob.click();
+    for(const delay of [100,200,450]){
+      await leverPage.waitForTimeout(delay);
+      assert.equal(await knob.evaluate(el=>{
+        const rect=el.getBoundingClientRect(),stage=el.closest('.machine-stage').getBoundingClientRect();
+        return rect.left>=stage.left&&rect.right<=stage.right;
+      }),true,`knob stays inside the machine stage during the pull at ${width}px`);
+    }
+    await leverPage.locator('#confirm').waitFor();
+    await leverPage.locator('#slot-lever').hover();
+    await leverPage.waitForTimeout(300);
+    assert.equal(await leverPage.locator('.lever-arm').evaluate(el=>getComputedStyle(el).transform),'none','hover after spinning leaves the arm upright');
+  }
+  await leverPage.close();
   await normalContext.close();
   testClockNow=savedClockNow;
   // A new group day unlocks the wheel without losing yesterday's journal.

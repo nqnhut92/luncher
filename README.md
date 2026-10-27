@@ -12,7 +12,7 @@ The interface is in Vietnamese and supports light and dark themes.
 
 ## Features
 
-- **Vertical food reel:** a slot-machine picker shows three rows with horizontal names and matching food illustrations. Use the spin button or side lever (also keyboard accessible). It slows down onto the selected dish; reduced-motion mode skips the animation. Filters cover rice and noodles. Food pictures stay left while names are centered in the remaining space; Bún chả / Bún thịt nướng uses two fixed lines. The cabinet has a recessed brass-trimmed reel, an integrated base button, and a separate side lever with a visible axle; clicking the lever animates its arm before the reel settles.
+- **Vertical food reel:** a slot-machine picker shows three rows with horizontal names and matching food illustrations. Use the spin button or side lever (also keyboard accessible). It slows down onto the selected dish; reduced-motion mode skips the animation. Filters cover rice and noodles. Food pictures stay left while names are centered in the remaining space; Bún chả / Bún thịt nướng uses two fixed lines. The cabinet has a recessed brass-trimmed reel, an integrated base button, and a separate side lever with a visible axle; clicking the lever animates its arm within the side gutter before the reel settles. The arm returns upright and stays upright while hovered or after a tap.
 - **Personal mode:** keep meal history in the current browser using `localStorage`.
 - **Shared groups:** create a group once and share its permanent link. Everyone with the link can view, rename the group, confirm, or replace the day's choice.
 - **Stable layout:** a fixed seven-day weekly view and a separate, scrollable change journal keep long histories from stretching the wheel.
