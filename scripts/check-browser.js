@@ -304,8 +304,8 @@ try {
   const drinkContext=await browser.newContext({reducedMotion:'reduce',viewport:{width:390,height:844}});
   const drinkPage=await drinkContext.newPage();drinkPage.on('pageerror',error=>errors.push(error.message));
   const drinkApiCalls=[];drinkPage.on('request',request=>{if(new URL(request.url()).pathname.startsWith('/api/'))drinkApiCalls.push(request.url());});
-  await drinkPage.goto(origin);await drinkPage.locator('a.header-link[href="/uong"]').click();
-  await drinkPage.waitForURL(origin+'/uong');
+  await drinkPage.goto(origin);await drinkPage.locator('a.header-link[href="/chieunayuonggi"]').click();
+  await drinkPage.waitForURL(origin+'/chieunayuonggi');
   assert.equal(await drinkPage.locator('h1').innerText().then(text=>text.replace(/\s+/g,' ')),'Chiều nay uống gì nhỉ?');
   assert.equal(await drinkPage.locator('.drink-list li').count(),12);
   const keysBefore=await drinkPage.evaluate(()=>Object.keys(localStorage).sort());
