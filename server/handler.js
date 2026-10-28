@@ -1,10 +1,11 @@
 import { readFileSync } from 'node:fs';
 import { isRoomCode } from './room-codes.js';
 import { roomToday } from './calendar.js';
-import { normalizeGrabUrl } from './grab.js';
+import { normalizeGrabUrl, safeScan, scanGrabLink } from './grab.js';
 const ids = new Set(JSON.parse(readFileSync(new URL('../src/foods.json', import.meta.url), 'utf8')).map(f => f.id));
 
-export function createHandler(getStore, clock = () => new Date()) {
+export function createHandler(getStore, clock = () => new Date(), scanGrab = scanGrabLink) {
+  const scan = safeScan(scanGrab);
   return async function handler(req, res) {
     res.setHeader('Cache-Control', 'private, no-store');
     res.setHeader('Referrer-Policy', 'no-referrer');
@@ -56,10 +57,13 @@ export function createHandler(getStore, clock = () => new Date()) {
       if (grabUrl === false) return send(400, { error: 'Link Grab cần bắt đầu bằng https:// và thuộc grab.com.' });
       // The server's day wins; reject a page that was left open across midnight.
       if (['confirm', 'replace'].includes(body.action) && body.today !== today) return send(409, { error: 'Đã sang ngày mới. Tải lại kết quả trước khi chốt nhé.' });
+      // Scanned before the revision-checked write; it reads Grab only, never the database.
+      const scanned = grabUrl ? await scan(grabUrl) : null;
       const store = await getStore();
       const changed = body.action === 'rename'
         ? await store.rename({ id, revision: body.revision, name: body.name.trim() })
-        : body.action === 'grab' ? await store.setGrabUrl({ id, revision: body.revision, grabUrl })
+        : body.action === 'grab' ? await store.setGrabUrl({ id, revision: body.revision, grabUrl,
+          grabTitle: scanned?.title, grabImage: scanned?.image })
         : await store.choose({ id, revision: body.revision, today, foodId: body.foodId,
           replace: body.action === 'replace', repeat: body.repeat });
       if (!changed) {

@@ -19,6 +19,7 @@ export function roomStore(query, generateCode = newRoomCode) {
       // One statement: revision and choices always describe the same DB snapshot.
       const rows = await query(`
         SELECT r.code AS id, r.name, r.revision, r.grab_url AS "grabUrl",
+          r.grab_title AS "grabTitle", r.grab_image AS "grabImage",
           COALESCE((SELECT json_agg(json_build_object('foodId', m.food_id,
             'date', to_char(m.meal_date, 'YYYY-MM-DD')) ORDER BY m.meal_date)
             FROM luncher_meal_choices m WHERE m.room_id = r.id), '[]'::json) AS history,
@@ -70,9 +71,11 @@ export function roomStore(query, generateCode = newRoomCode) {
         WHERE r.code = $1 AND revision = $2 RETURNING id`, [id, revision, name]);
       return rows.length > 0;
     },
-    async setGrabUrl({ id, revision, grabUrl }) {
-      const rows = await query(`UPDATE luncher_rooms r SET grab_url = $3, revision = revision + 1
-        WHERE r.code = $1 AND revision = $2 RETURNING id`, [id, revision, grabUrl]);
+    async setGrabUrl({ id, revision, grabUrl, grabTitle = null, grabImage = null }) {
+      const rows = await query(`UPDATE luncher_rooms r SET grab_url = $3, grab_title = $4,
+          grab_image = $5, revision = revision + 1
+        WHERE r.code = $1 AND revision = $2 RETURNING id`,
+      [id, revision, grabUrl, grabUrl ? grabTitle : null, grabUrl ? grabImage : null]);
       return rows.length > 0;
     },
   };

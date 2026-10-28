@@ -18,6 +18,8 @@ erDiagram
         varchar(60) name "Editable group name"
         integer revision "Optimistic concurrency version"
         varchar(500) grab_url "Optional Grab group-order URL"
+        varchar(120) grab_title "Scanned Grab share title"
+        varchar(500) grab_image "Scanned Grab share image URL"
         timestamptz created_at "Creation timestamp"
     }
     luncher_meal_events {
@@ -50,6 +52,8 @@ There are no users, owners, memberships, or roles. Possession of the group link 
 | `name` | `varchar(60)` | Required, nonblank after trimming. The API trims input and validates a maximum of 60 characters. Any group participant may rename it. |
 | `revision` | `integer` | Required, defaults to `0`, cannot be negative. Increments with each accepted rename, confirmation, replacement, or Grab-link update. |
 | `grab_url` | `varchar(500)` | Nullable Grab group-order URL. SQL requires an `https://` prefix; the API additionally validates allowed hosts, absence of embedded credentials, and the 500-character limit. |
+| `grab_title` | `varchar(120)` | Nullable title read from Grab's share details when the link is saved, with control characters removed and whitespace collapsed. Cleared with the link. |
+| `grab_image` | `varchar(500)` | Nullable Grab share-image URL read when the link is saved. SQL requires an `https://` prefix; the API accepts only `grab.com` or its subdomains, without credentials. Cleared with the link. |
 | `created_at` | `timestamptz` | Required, defaults to `now()`. |
 
 The public URL is `/g/<code>`, such as `/g/Ab3xY9`. Uppercase and lowercase letters are distinct. Names can change; codes remain stable.
@@ -125,6 +129,8 @@ The database stores current daily choices and their confirmation/replacement jou
     "name": "Lunch crew",
     "revision": 3,
     "grabUrl": null,
+    "grabTitle": null,
+    "grabImage": null,
     "history": [
       { "foodId": "mi-quang", "date": "2026-10-27" }
     ],
@@ -173,13 +179,19 @@ The client submits `action: "rename"`, public `id`, `revision`, and `name`. The 
 
 `POST /api/rooms` accepts `{ "action": "grab", "id": "Ab3xY9", "revision": 3, "grabUrl": "https://r.grab.com/g/example" }`. `today` is not required. The API trims and normalizes the URL, permitting only HTTPS URLs on `grab.com`, its subdomains, or exactly `grab.onelink.me`, with no embedded username/password and at most 500 characters before and after normalization. An empty or whitespace-only string clears the field to SQL `NULL`; invalid input returns `400`.
 
-The parameterized update checks the room revision and increments it on acceptance. A stale revision returns `409` with the current room. This operation changes neither daily choices nor meal events. The link persists until explicitly changed or cleared; there is no daily reset, expiry check, or Grab order creation.
+The parameterized update checks the room revision and increments it on acceptance. A stale revision returns `409` with the current room. Before the write, the server reads Grab's share details with `scanGrabLink` in `server/grab.js`:
+
+1. It checks the link itself for Grab's deep-link `og_title` and `og_image` parameters.
+2. Otherwise it fetches the link with manual redirects and follows at most four hops. Each hop is re-validated against the Grab host allowlist: HTTPS, no credentials, at most 4096 characters.
+3. It stops at the first hop that carries the parameters, or reads Open Graph tags from an HTML response of at most 256 KB.
+
+The whole read has a 4-second limit. If it fails, the details are stored as `NULL` and the link is still saved. The same parameterized update writes `grab_url`, `grab_title` and `grab_image`, and clearing the link clears all three. This operation changes neither daily choices nor meal events. The link persists until explicitly changed or cleared; there is no daily reset, expiry check, or Grab order creation.
 
 ### Group page and QR preview
 
-Vercel rewrites `/g/:id` to `/api/group-page?id=:id`. The handler reads the shared store and injects escaped group metadata into the built SPA shell. A saved Grab link adds an Open Graph image URL at `/api/qr?id=<code>&v=<hash>`. Missing groups or database lookup failures fall back to the unmodified app shell; the client still loads group data through `/api/rooms`. HTML responses are private and not cached.
+Vercel rewrites `/g/:id` to `/api/group-page?id=:id`. The handler reads the shared store and injects escaped group metadata into the built SPA shell. The title and description name today's confirmed dish (Asia/Ho_Chi_Minh), the time of its latest confirm or replace event, and the scanned Grab title. A saved Grab link adds an Open Graph image URL at `/api/qr?id=<code>&v=<hash>`. Missing groups or database lookup failures fall back to the unmodified app shell; the client still loads group data through `/api/rooms`. HTML responses are private and not cached.
 
-The QR endpoint accepts `GET` and `HEAD`, returning a 1200×630 PNG encoding the saved Grab URL. It returns `400` for invalid codes, `404` for absent groups/links, `405` for unsupported methods, and `503` for lookup/render failures. Successful images use `Cache-Control: public, max-age=300`; failures use `no-store`. The version is the first ten SHA-256 hex characters of the Grab URL. It changes the image URL when the link changes, but is not an immutable historical image or access token: the endpoint always renders the current saved link. Chat services may retain their own cached previews.
+The QR endpoint accepts `GET` and `HEAD`, returning a 1200×630 PNG encoding the saved Grab URL. When `grab_image` is saved, the endpoint fetches that image and draws it on the left, with the QR code on the right. The fetch is limited to Grab hosts, no redirects, 3 seconds and 2 MB, and accepts only PNG files that declare at most 2000×2000 pixels. Without an image, or on any failure, the endpoint renders the QR code alone. `layout=square` returns a 480×480 QR code without remote art; the in-app Grab card uses it. It returns `400` for invalid codes, `404` for absent groups/links, `405` for unsupported methods, and `503` for lookup/render failures. Successful images use `Cache-Control: public, max-age=300`; failures use `no-store`. The version is the first ten SHA-256 hex characters of the Grab URL, combined with the share-image URL when one is saved. It changes the image URL when the link changes, but is not an immutable historical image or access token: the endpoint always renders the current saved link. Chat services may retain their own cached previews.
 
 Anyone with the group code, including preview crawlers, can retrieve its saved Grab URL or QR. No additional authentication or new table is introduced.
 
@@ -201,7 +213,7 @@ Vercel runs the same setup through `npm run build:vercel`. The connection comes 
 
 Setup consists of two resumable phases:
 
-1. Apply the SQL statements in [`db/schema.sql`](../db/schema.sql) in a transaction, followed by sorted, idempotent SQL files in `db/migrations/`. Create missing tables, add public-code and nullable `grab_url` columns if needed, and populate journal baselines for existing daily choices that have no events.
+1. Apply the SQL statements in [`db/schema.sql`](../db/schema.sql) in a transaction, followed by sorted, idempotent SQL files in `db/migrations/`. Create missing tables, add public-code and nullable `grab_url`, `grab_title` and `grab_image` columns if needed, and populate journal baselines for existing daily choices that have no events.
 2. Backfill rooms without codes using [`server/room-codes.js`](../server/room-codes.js), then set `code` to `NOT NULL`.
 
 For an existing room, the first code candidate is derived from SHA-256 of its internal UUID and an attempt number, mapped to six base-62 characters. This makes the initial candidate reproducible across migration retries. If a unique constraint collision occurs, the attempt number changes. Existing non-null codes are never reassigned.
@@ -241,11 +253,11 @@ Only successful visits create entries. Revisiting deduplicates and moves the gro
 | [`server/calendar.js`](../server/calendar.js) | Shared Vietnam calendar and week boundaries |
 | [`api/rooms.js`](../api/rooms.js) | Vercel group-data handler |
 | [`server/neon.js`](../server/neon.js) | Shared server-only Neon store |
-| [`server/grab.js`](../server/grab.js) | Grab URL normalization and validation |
+| [`server/grab.js`](../server/grab.js) | Grab URL normalization, validation, and share-detail scanning |
 | [`server/preview.js`](../server/preview.js) | Escaped preview metadata, QR PNG rendering, and response caching |
 | [`api/group-page.js`](../api/group-page.js) | Built app-shell loading and group preview handler |
 | [`api/qr.js`](../api/qr.js) | Group QR image handler |
-| [`tests/grab.test.js`](../tests/grab.test.js) | Grab validation, revision checks, preview fallback, and QR endpoint tests |
+| [`tests/grab.test.js`](../tests/grab.test.js) | Grab validation, scanning and redirect limits, revision checks, preview text and fallback, and QR card tests |
 | [`tests/rooms.test.js`](../tests/rooms.test.js) | Schema, migration, API, concurrency, and history tests |
 
 The schema currently has no automatic retention policy or public deletion endpoint. Any future food catalog or membership feature should introduce an explicit migration and update this document.

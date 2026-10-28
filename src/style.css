@@ -102,8 +102,9 @@ main.is-group{padding-top:28px}
 
 .grab-card h2{margin:12px 0 8px}
 .grab-card>p{font-size:14px;line-height:1.6;margin-bottom:16px}
+.grab-art{margin:14px 0 0;border-radius:16px;overflow:hidden;border:1px solid var(--border);background:#fff}.grab-art img{display:block;width:100%;height:auto}
 .grab-body{display:flex;align-items:center;gap:16px;margin-top:14px}
-.grab-qr{flex-shrink:0;width:128px;height:128px;border-radius:14px;border:1px solid var(--border);background:#fff;object-fit:cover}
+.grab-qr{flex-shrink:0;width:128px;height:128px;border-radius:14px;border:1px solid var(--border);background:#fff;object-fit:contain}
 .grab-info{min-width:0}
 .grab-info h2{margin:0 0 6px;font-size:18px}
 .grab-info p{font-size:13px;line-height:1.5;margin-bottom:12px}
@@ -255,3 +256,33 @@ html[data-theme=dark] .machine-controls .hint,html[data-theme=dark] .slot-captio
 .reel-row .food-art{width:32%;height:auto;max-width:104px;aspect-ratio:1}
 .reel-row .reel-name{flex:1;min-width:0;text-align:center;container-type:inline-size}
 .reel-name-line{display:block;white-space:nowrap;font-size:clamp(11px,13cqi,22px);line-height:1.4;letter-spacing:-.3px}
+
+/* Liquid Glass for the slot reel: same geometry as above, glass materials instead of
+   brass. A clear specular rim replaces the gold borders; the reel reads through frosted glass. */
+.slot-machine{background:linear-gradient(160deg,rgba(255,255,255,.62),rgba(255,255,255,.18) 55%,rgba(255,255,255,.4)) padding-box,linear-gradient(150deg,rgba(255,255,255,.95),rgba(255,255,255,.25) 40%,rgba(255,255,255,.7) 70%,rgba(255,255,255,.3)) border-box;box-shadow:var(--glass-highlight),0 0 0 .5px var(--glass-edge),0 18px 44px rgba(90,63,42,.16)}
+.slot-machine:before,.slot-machine:after{display:none}
+.machine-stage:after{background:rgba(90,63,42,.14)}
+.slot-title{background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 78%,white),var(--accent) 52%,color-mix(in srgb,var(--accent) 88%,black)) padding-box,linear-gradient(180deg,rgba(255,255,255,.75),rgba(255,255,255,.15)) border-box;color:var(--on-accent);text-shadow:none;box-shadow:inset 0 1px 0 rgba(255,255,255,.45),0 8px 20px color-mix(in srgb,var(--accent) 26%,transparent)}
+.slot-title>span{color:inherit;text-shadow:none;opacity:.85}
+.slot-count{background:var(--glass);border-color:var(--glass-border);border-radius:999px;color:var(--muted);box-shadow:var(--glass-highlight),0 0 0 .5px var(--glass-edge)}
+.slot-count i{background:var(--accent);box-shadow:none}
+.slot-window{background:linear-gradient(rgba(255,255,255,.58),rgba(255,255,255,.42)) padding-box,linear-gradient(160deg,rgba(255,255,255,.9),rgba(255,255,255,.2) 50%,rgba(255,255,255,.75)) border-box;box-shadow:inset 0 2px 10px rgba(90,63,42,.12),0 0 0 1px rgba(90,63,42,.1)}
+.slot-window:after{background:linear-gradient(to bottom,rgba(246,241,234,.92) 0%,rgba(246,241,234,.45) 14%,transparent 34%,transparent 66%,rgba(246,241,234,.45) 86%,rgba(246,241,234,.92) 100%);box-shadow:none}
+.reel-row{color:var(--ink);background:none;border-bottom-color:var(--glass-border)}
+.slot-selection{border-color:color-mix(in srgb,var(--accent) 70%,transparent);background:color-mix(in srgb,var(--accent) 6%,transparent);box-shadow:var(--glass-highlight),0 6px 18px color-mix(in srgb,var(--accent) 16%,transparent)}
+.slot-selection:before{border-left-color:var(--accent)}.slot-selection:after{border-right-color:var(--accent)}
+.machine-controls:before{border-top-color:var(--glass-border);border-bottom-color:transparent;height:0}
+.machine-controls .primary{border-color:rgba(255,255,255,.45);border-radius:999px;background:linear-gradient(180deg,color-mix(in srgb,var(--accent) 78%,white) 0%,var(--accent) 48%,color-mix(in srgb,var(--accent) 88%,black) 100%) padding-box;color:var(--on-accent);box-shadow:inset 0 1px 0 rgba(255,255,255,.5),inset 0 -1px 0 rgba(0,0,0,.18),0 10px 24px color-mix(in srgb,var(--accent) 30%,transparent)}
+.machine-controls .primary.is-locked:disabled{background:var(--glass);border-color:var(--glass-border);color:var(--muted);box-shadow:var(--glass-highlight)}
+.machine-controls .hint,.slot-caption{color:var(--muted)}
+.slot-empty{background:var(--glass-strong);color:var(--muted)}
+/* Lever in polished chrome; the knob keeps the accent color. */
+#lever-metal stop:nth-child(odd){stop-color:#9aa0a6}#lever-metal stop:nth-child(even){stop-color:#f4f6f8}
+.slot-lever path[stroke="#5f3b22"],.slot-lever path[stroke="#95662e"]{stroke:rgba(60,64,70,.45)}
+html[data-theme=dark] .slot-machine{background:linear-gradient(160deg,rgba(255,255,255,.12),rgba(255,255,255,.03) 55%,rgba(255,255,255,.08)) padding-box,linear-gradient(150deg,rgba(255,255,255,.35),rgba(255,255,255,.06) 40%,rgba(255,255,255,.22) 70%,rgba(255,255,255,.05)) border-box;box-shadow:var(--glass-highlight),0 0 0 .5px var(--glass-edge),0 18px 44px rgba(0,0,0,.45)}
+html[data-theme=dark] .slot-count{background:var(--glass);color:var(--muted);border-color:var(--glass-border);box-shadow:var(--glass-highlight)}
+html[data-theme=dark] .slot-window{background:linear-gradient(rgba(20,24,22,.55),rgba(20,24,22,.4)) padding-box,linear-gradient(160deg,rgba(255,255,255,.3),rgba(255,255,255,.05) 50%,rgba(255,255,255,.2)) border-box;box-shadow:inset 0 2px 12px rgba(0,0,0,.4)}
+html[data-theme=dark] .slot-window:after{background:linear-gradient(to bottom,rgba(22,26,24,.92) 0%,rgba(22,26,24,.45) 14%,transparent 34%,transparent 66%,rgba(22,26,24,.45) 86%,rgba(22,26,24,.92) 100%)}
+html[data-theme=dark] .machine-stage:after{background:rgba(0,0,0,.35)}
+html[data-theme=dark] .machine-controls .hint,html[data-theme=dark] .slot-caption{color:var(--muted)}
+@media(prefers-reduced-transparency:reduce){.slot-machine,html[data-theme=dark] .slot-machine{background:var(--card) padding-box,var(--border) border-box}.slot-window,html[data-theme=dark] .slot-window{background:var(--card) padding-box,var(--border) border-box}}

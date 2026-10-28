@@ -49,3 +49,8 @@ ON CONFLICT (room_id, meal_date, room_revision) DO NOTHING;
 -- Optional Grab group-order link; shared previews render it as a QR code.
 ALTER TABLE luncher_rooms ADD COLUMN IF NOT EXISTS grab_url varchar(500)
   CHECK (grab_url ~ '^https://');
+
+-- Best-effort Open Graph details scanned from the Grab link when it is saved.
+ALTER TABLE luncher_rooms ADD COLUMN IF NOT EXISTS grab_title varchar(120);
+ALTER TABLE luncher_rooms ADD COLUMN IF NOT EXISTS grab_image varchar(500)
+  CHECK (grab_image ~ '^https://');

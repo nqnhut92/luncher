@@ -19,10 +19,11 @@ The interface is in Vietnamese and supports light and dark themes.
 - **Today first:** once the day's meal is confirmed, the dish card leads and the wheel steps back; the full menu is collapsed until opened. In a group, the Grab order card sits beside the wheel with its QR code and an **Open Grab order** button.
 - **Weekly variety:** confirmed dishes are excluded for the rest of the week unless repeats are explicitly enabled.
 - **Change journal:** confirmations and replacements retain a timestamped record of the previous and new dishes.
-- **Grab group order:** paste a Grab group-order link (`https://…grab.com/…`) into the group. The group page shows its QR code, and sharing the `/g/<code>` link in chat apps renders that QR as the link preview image (Open Graph).
+- **Grab group order:** paste a Grab group-order link (`https://…grab.com/…`) into the group. Luncher reads the share details Grab publishes for that link: a title and a share image showing the store name, address, and rating. The group page shows them with a QR code. Sharing the `/g/<code>` link in chat apps renders a preview card with the store image and QR code (Open Graph).
+- **Link previews at a glance:** the preview title and description of a shared group link name today's confirmed dish and the time it was confirmed, for example "Hôm nay ăn Mì Quảng 🍜 · Lunch crew".
 - **Concurrent updates:** stale confirmations cannot silently overwrite a newer group decision.
 - **Sticky header:** the logo and theme switch stay visible while scrolling. A full-width divider and translucent, blurred background work in both themes, with an opaque fallback when backdrop filters are unavailable.
-- **Responsive design:** mobile layouts, persistent theme preferences, reduced-motion support, and no audio. The interface uses a Liquid Glass style: capsule controls and translucent cards over a soft color backdrop, with denser glass behind text so it keeps WCAG AA contrast. Buttons have touch targets of at least 44px, and surfaces become opaque when the device asks for reduced transparency.
+- **Responsive design:** mobile layouts, persistent theme preferences, reduced-motion support, and no audio. The interface uses a Liquid Glass style: capsule controls, translucent cards, and a glass slot reel over a soft color backdrop, with denser glass behind text so it keeps WCAG AA contrast. Buttons have touch targets of at least 44px, and surfaces become opaque when the device asks for reduced transparency.
 
 ## How shared groups work
 
@@ -53,9 +54,11 @@ Recent groups are stored in `localStorage`, not a public database directory. Ano
 
 In a shared group, add a Grab group-order link, save it, then share the Luncher group link. Any participant with the group link can update or clear the Grab link. Accepted links use HTTPS on `grab.com`, a subdomain of `grab.com`, or `grab.onelink.me`, contain no username/password, and are at most 500 characters long. Clearing the link removes the QR without changing meals or their journal.
 
-The group page shows a QR code for the saved Grab URL. `/g/<code>` serves the app shell with server-rendered Open Graph metadata; `/api/qr?id=<code>` produces a 1200×630 PNG. Chat services may show this as a preview, but can cache earlier previews or choose not to display an image. Changing the Grab link changes the image version URL; it cannot force a chat service to refresh an already shared message.
+When a link is saved, the server reads Grab's share details for it, either from the redirect of a Grab short link or from the Open Graph tags of the Grab page. It follows only HTTPS redirects on the allowed Grab hosts, within 4 seconds and 256 KB. It keeps only a title (up to 120 characters) and a share image hosted on `grab.com`. Grab publishes no store name as text, so the store name, address, and rating appear only in Grab's share image. If reading fails, the link is still saved and the preview shows only the QR code.
 
-The saved link is not reset automatically each day. Replace or clear it when an order ends. Luncher does not create Grab orders, track expiry, or collect individual orders. Sharing the group link also makes its saved Grab URL available to recipients and link-preview services.
+The group page shows the share image and a QR code for the saved Grab URL. `/g/<code>` serves the app shell with server-rendered Open Graph metadata. Its title and description name today's confirmed dish, the time it was confirmed, and the Grab title. `/api/qr?id=<code>` produces a 1200×630 PNG with Grab's share image on the left and the QR code on the right. It shows the QR code alone when there is no usable image; Grab's image must be a PNG of at most 2 MB and 2000×2000 pixels. Chat services may show this as a preview, but can cache earlier previews or choose not to display an image. Changing the Grab link changes the image version URL; it cannot force a chat service to refresh an already shared message.
+
+The saved link is not reset automatically each day. Replace or clear it when an order ends. Luncher does not create Grab orders, track expiry, or collect individual orders. Sharing the group link also makes its saved Grab URL and share image available to recipients and link-preview services. Luncher does not track Grab's order status. The saved share details reflect the time the link was saved, and the preview text reflects the dish confirmed when a chat service fetched the preview.
 
 ## Web Analytics
 
