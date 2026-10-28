@@ -286,3 +286,19 @@ html[data-theme=dark] .slot-window:after{background:linear-gradient(to bottom,rg
 html[data-theme=dark] .machine-stage:after{background:rgba(0,0,0,.35)}
 html[data-theme=dark] .machine-controls .hint,html[data-theme=dark] .slot-caption{color:var(--muted)}
 @media(prefers-reduced-transparency:reduce){.slot-machine,html[data-theme=dark] .slot-machine{background:var(--card) padding-box,var(--border) border-box}.slot-window,html[data-theme=dark] .slot-window{background:var(--card) padding-box,var(--border) border-box}}
+
+/* Afternoon drink picker (/uong) and the header link between the two pickers. */
+.header-link{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 16px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-border);box-shadow:var(--glass-highlight),0 0 0 .5px var(--glass-edge);color:var(--ink);font-size:14px;font-weight:600;text-decoration:none;white-space:nowrap}
+.header-link:hover{background:var(--glass-strong)}
+.drink-art{display:inline-grid;place-items:center;flex:0 0 auto;width:72px;height:auto;aspect-ratio:1;border-radius:50%;background:var(--drink);color:#fff;font-size:22px;font-weight:800;letter-spacing:.5px;line-height:1;object-fit:cover;box-shadow:inset 0 0 0 3px rgba(255,255,255,.3),0 3px 8px rgba(40,30,20,.16)}
+.reel-row .drink-art{width:32%;max-width:88px;font-size:24px}
+.result-emoji .drink-art{width:88px;font-size:26px}
+.drink-list{list-style:none;margin:16px 0 0;padding:0;display:grid;gap:2px}
+.drink-list li{display:flex;align-items:center;gap:12px;min-height:48px;padding:4px 8px;border-radius:14px}
+.drink-list .drink-art{width:36px;font-size:11px;letter-spacing:0}
+.drink-list b{font-size:14px;font-weight:600;min-width:0}
+.drink-list li.is-picked{background:color-mix(in srgb,var(--success-soft) 80%,transparent)}
+/* The longer drink headline needs the intro text below it before the wide layout. */
+@media(max-width:1220px){.is-drinks .intro p{position:static;margin-top:12px}}
+@media(max-width:650px){.header-right{gap:12px}.reel-row .drink-art{font-size:18px}.result-emoji .drink-art{width:64px;font-size:20px}}
+@media(max-width:480px){.header-link{width:44px;padding:0;justify-content:center}.header-link span:not([aria-hidden]){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.reel-row .drink-art{font-size:15px}}

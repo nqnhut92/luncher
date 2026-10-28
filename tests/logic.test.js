@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {dateKey,weekStart,availableFoods,confirmFood,pickIndex,readState} from '../src/logic.js';
+import {dateKey,weekStart,availableFoods,confirmFood,pickIndex,pickOther,readState} from '../src/logic.js';
 const foods=[{id:'rice',type:'rice'},{id:'pho',type:'noodle'}];
 const monday=new Date(2026,9,26,12), sunday=new Date(2026,10,1,12), next=new Date(2026,10,2,12);
 test('week runs Monday to Sunday and respects local date',()=>{assert.equal(weekStart(monday),'2026-10-26');assert.equal(weekStart(sunday),'2026-10-26');assert.equal(weekStart(next),'2026-11-02');assert.equal(dateKey(monday),'2026-10-26')});
@@ -14,4 +14,14 @@ test('retired catalog entries remain readable but never enter the spin pool',()=
  const catalog=[{id:'old',type:'rice',active:false},{id:'new',type:'rice'}];
  assert.deepEqual(availableFoods(catalog,[],'all',true,monday),[catalog[1]]);
  assert.deepEqual(readState(JSON.stringify([{foodId:'old',date:'2026-10-26'}]),catalog.map(f=>f.id)),[{foodId:'old',date:'2026-10-26'}]);
+});
+
+test('drink re-spin never repeats the shown shop and still reaches both ends',()=>{
+ assert.equal(pickOther(0,-1),-1);
+ assert.equal(pickOther(1,0,()=>.5),0);
+ assert.equal(pickOther(12,-1,()=>.99999),11);
+ assert.equal(pickOther(12,0,()=>0),1);
+ assert.equal(pickOther(12,11,()=>.99999),10);
+ assert.equal(pickOther(12,5,()=>.5),6);
+ for(let i=0;i<200;i++)assert.notEqual(pickOther(12,3),3);
 });

@@ -300,6 +300,37 @@ try {
   await home.screenshot({path:'/tmp/luncher-recent-desktop.png',fullPage:true});
   assert.deepEqual(homeApiCalls,[],'homepage must not fetch or publish a database group directory');
   await cleanContext.close();
+  // Afternoon drink picker: personal-only, reachable from the header, and stores nothing.
+  const drinkContext=await browser.newContext({reducedMotion:'reduce',viewport:{width:390,height:844}});
+  const drinkPage=await drinkContext.newPage();drinkPage.on('pageerror',error=>errors.push(error.message));
+  const drinkApiCalls=[];drinkPage.on('request',request=>{if(new URL(request.url()).pathname.startsWith('/api/'))drinkApiCalls.push(request.url());});
+  await drinkPage.goto(origin);await drinkPage.locator('a.header-link[href="/uong"]').click();
+  await drinkPage.waitForURL(origin+'/uong');
+  assert.equal(await drinkPage.locator('h1').innerText().then(text=>text.replace(/\s+/g,' ')),'Chiều nay uống gì nhỉ?');
+  assert.equal(await drinkPage.locator('.drink-list li').count(),12);
+  const keysBefore=await drinkPage.evaluate(()=>Object.keys(localStorage).sort());
+  const picks=[];
+  for(const trigger of ['#slot-lever','#spin','#spin']){
+    await drinkPage.locator(trigger).click();await drinkPage.locator('.result h2').filter({hasNotText:'Ly nước đang đợi'}).waitFor();
+    await drinkPage.waitForFunction(()=>!document.querySelector('#spin').disabled);
+    const pick=await drinkPage.locator('.result h2').innerText();
+    const centered=await drinkPage.locator('.reel-row').evaluateAll(rows=>{
+      const window=document.querySelector('.slot-window').getBoundingClientRect();
+      return rows.find(row=>{const rect=row.getBoundingClientRect();return Math.abs((rect.top+rect.bottom-window.top-window.bottom)/2)<1;})?.querySelector('.reel-name').innerText;
+    });
+    assert.equal(centered?.replace(/\s+/g,' ').trim(),pick,'the centered reel shop matches the picked shop');
+    assert.equal(await drinkPage.locator('.drink-list li.is-picked b').innerText(),pick);
+    if(picks.length)assert.notEqual(pick,picks.at(-1),'spinning again changes the shop');
+    picks.push(pick);
+  }
+  assert.deepEqual(await drinkPage.evaluate(()=>Object.keys(localStorage).sort()),keysBefore,'the drink picker writes no browser storage');
+  assert.equal(await drinkPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'no horizontal scroll on mobile');
+  await drinkPage.reload();
+  assert.equal(await drinkPage.locator('.result h2').innerText(),'Ly nước đang đợi','results are not kept across reloads');
+  assert.equal(await drinkPage.locator('script[src*="/_vercel/insights/"]').count(),0);
+  assert.deepEqual(drinkApiCalls,[],'the drink picker never calls the group API');
+  await drinkPage.locator('a.header-link[href="/"]').click();await drinkPage.waitForURL(origin+'/');
+  await drinkContext.close();
   // Invalid links must never fall back to editable personal mode.
   await second.goto(origin + '/g/no-such-room'); await second.locator('.toast').waitFor();
   assert.equal(await second.locator('#spin').isDisabled(), true);
@@ -311,7 +342,7 @@ try {
   await second.goto(roomUrl); await second.locator('.toast').waitFor();
   assert.equal(await second.locator('#spin').isDisabled(), true);
   assert.deepEqual(errors, []);
-  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, locked choices, cancellable replacement, persistent change journal, next-day unlock, refresh, reload persistence, mobile, theme, stable sidebar/wheel geometry at desktop/tablet/mobile in both themes, DOM/scroll/focus preservation, real spin continuity, toast expiry/replacement/dismissal without layout or focus changes, browser-private recent groups, renamed labels, forget/revisit, bounded 10-group layouts, and failed/offline room handling.');
+  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, locked choices, cancellable replacement, persistent change journal, next-day unlock, refresh, reload persistence, mobile, theme, stable sidebar/wheel geometry at desktop/tablet/mobile in both themes, DOM/scroll/focus preservation, real spin continuity, toast expiry/replacement/dismissal without layout or focus changes, browser-private recent groups, renamed labels, forget/revisit, bounded 10-group layouts, the storage-free afternoon drink picker, and failed/offline room handling.');
 } finally {
   await browser?.close();
   await app.close();

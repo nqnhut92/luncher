@@ -18,6 +18,8 @@ export async function startDevServer(apiHandler = handler, port = 5173, getStore
       req.query = { id: group[1] };
       return pageHandler(req, res).catch(() => { if (!res.writableEnded) { res.statusCode = 500; res.end(); } });
     }
+    // Mirrors the vercel.json rewrite for the drink picker page.
+    if (url.pathname === '/uong') req.url = '/uong/' + url.search;
     if (url.pathname === '/api/qr') return imageHandler(req, res);
     if (url.pathname !== '/api/rooms') return vite.middlewares(req, res);
     res.status = code => { res.statusCode = code; return res; };

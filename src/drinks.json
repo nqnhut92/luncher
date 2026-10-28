@@ -1,0 +1,14 @@
+[
+  {"id": "koi-the", "name": "Koi Thé", "mark": "KOI", "color": "#8c6210"},
+  {"id": "alittle", "name": "Một Chút Chút ALittle", "mark": "MCC", "color": "#b03a5b"},
+  {"id": "phuc-long", "name": "Phúc Long", "mark": "PL", "color": "#2e6b3c"},
+  {"id": "tea-joy", "name": "TEA JOY", "mark": "TJ", "color": "#c2410c"},
+  {"id": "by-joy", "name": "BY JOY", "mark": "BJ", "color": "#7c3aed"},
+  {"id": "bong-tra", "name": "Bông Trà", "mark": "BT", "color": "#be185d"},
+  {"id": "gong-cha", "name": "Gong Cha", "mark": "GC", "color": "#b91c1c"},
+  {"id": "phong-tra", "name": "Phong Trà", "mark": "PT", "color": "#0f766e"},
+  {"id": "dabacha", "name": "Dabacha", "mark": "DBC", "color": "#6d4c41"},
+  {"id": "lam-tra", "name": "Lam Trà", "mark": "LT", "color": "#1d4ed8"},
+  {"id": "yen-ban", "name": "Yên Bản", "mark": "YB", "color": "#4d7c0f"},
+  {"id": "phe-la", "name": "Phê La", "mark": "PLA", "color": "#374151"}
+]

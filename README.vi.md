@@ -14,6 +14,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 
 - **Máy quay món dọc:** ô quay kiểu máy jackpot hiện ba hàng, tên món nằm ngang và có hình minh họa đồng bộ. Bấm quay hoặc bấm cần bên cạnh (hỗ trợ bàn phím) để chọn món; chuyển động chậm dần rồi dừng ở món được chọn. Chế độ giảm chuyển động bỏ qua hoạt ảnh. Có bộ lọc cơm và bún/mì. Hình món nằm bên trái, tên căn giữa trong phần còn lại; Bún chả / Bún thịt nướng luôn hiện đúng hai dòng trong ô quay. Thân máy có ô quay lõm viền đồng, nút quay nằm trên bệ và cụm cần gạt riêng bên hông với ổ trục rõ ràng; bấm cần sẽ tạo chuyển động gạt gọn trong khoảng bên hông trước khi ô quay dừng. Cần trở về thẳng đứng và giữ nguyên khi con trỏ còn nằm trên cần hoặc sau thao tác chạm.
 - **Chế độ cá nhân:** lưu lịch sử ngay trên trình duyệt bằng `localStorage`.
+- **Chiều nay uống gì (`/uong`):** một vòng quay riêng, chỉ dùng cá nhân, chọn quán trà sữa/trà cho buổi chiều. Trang này không có nhóm, không chốt, không lịch sử, không áp quy tắc trong tuần và không lưu gì; tải lại trang là kết quả mất. Quay lại luôn ra một quán khác với quán đang hiện. Thanh đầu trang có nút chuyển qua lại giữa trang ăn trưa và trang đồ uống.
 - **Nhóm ăn chung:** tạo nhóm một lần và chia sẻ link cố định. Ai có link cũng có thể xem, sửa tên nhóm, chốt hoặc đổi món trong ngày.
 - **Bố cục ổn định:** thực đơn có bảy dòng cố định; nhật ký tách riêng và cuộn bên trong, không kéo giãn khung vòng quay.
 - **Ưu tiên món hôm nay:** khi đã chốt, thẻ món ăn hiện lên đầu và vòng quay thu nhỏ lại; danh sách món được thu gọn cho tới khi mở ra. Trong nhóm, thẻ đơn Grab nằm cạnh vòng quay, có mã QR và nút **Mở đơn Grab**.
@@ -80,6 +81,8 @@ Danh sách món mặc định nằm trong [`src/foods.json`](src/foods.json). Gi
 
 Thực đơn hiện có tám lựa chọn: Bún bò, Bún chả / Bún thịt nướng (gộp một lựa chọn), Cơm gà, Bánh canh cua, Mì Quảng, Cơm tấm, Mì hoành thánh và Bún mọc. Bộ hình minh họa được tạo sẵn và đóng gói tại `public/images/food-atlas.png`; app không gọi tạo ảnh khi sử dụng. Món có `active: false` được ẩn khỏi lượt quay mới và thực đơn nhưng vẫn dùng để đọc các bữa ăn và nhật ký đã lưu. ID cũ được giữ nguyên; phiên bản app cũ vẫn có thể chốt ID món cũ qua API.
 
+Danh sách quán đồ uống nằm trong [`src/drinks.json`](src/drinks.json): Koi Thé, Một Chút Chút ALittle, Phúc Long, TEA JOY, BY JOY, Bông Trà, Gong Cha, Phong Trà, Dabacha, Lam Trà, Yên Bản và Phê La. Mỗi quán hiện một huy hiệu chữ viết tắt có màu (`mark`, `color`); đây chỉ là hình tạm, không phải logo hay màu thương hiệu chính thức. Muốn dùng logo, thêm ảnh bạn được phép sử dụng vào `public/images/drinks/` rồi đặt trường `logo` của quán thành đường dẫn đó, ví dụ `"/images/drinks/phe-la.png"`. Thêm quán mới chỉ cần thêm một mục với `id` không trùng.
+
 ## Phát triển local
 
 ### Yêu cầu
@@ -136,7 +139,7 @@ Lệnh này chạy đầy đủ app và API với cơ sở dữ liệu tạm tro
 4. Deploy. Lệnh build chuẩn bị schema trước khi build giao diện. Tài khoản kết nối DB cần quyền tạo bảng ứng dụng ở lần triển khai đầu tiên.
 5. Mở trang production, tạo nhóm và dùng một phiên trình duyệt khác để kiểm tra việc chốt món chung.
 
-[`vercel.json`](vercel.json) khai báo lệnh build và rewrite cho `/g/:id`. Vercel chuyển `/g/:id` tới [`api/group-page.js`](api/group-page.js) để tạo metadata preview và phục vụ ảnh QR qua [`api/qr.js`](api/qr.js). [`api/rooms.js`](api/rooms.js) xử lý dữ liệu nhóm; cả ba dùng chung store Neon phía server. Nếu dashboard đang ghi đè lệnh build, cập nhật theo giá trị ở trên. Cần redeploy sau khi thay đổi biến môi trường.
+[`vercel.json`](vercel.json) khai báo lệnh build, rewrite cho `/g/:id` và rewrite `/uong` tới trang đồ uống mà Vite build từ [`uong/index.html`](uong/index.html) (xem [`vite.config.js`](vite.config.js)). Vercel chuyển `/g/:id` tới [`api/group-page.js`](api/group-page.js) để tạo metadata preview và phục vụ ảnh QR qua [`api/qr.js`](api/qr.js). [`api/rooms.js`](api/rooms.js) xử lý dữ liệu nhóm; cả ba dùng chung store Neon phía server. Nếu dashboard đang ghi đè lệnh build, cập nhật theo giá trị ở trên. Cần redeploy sau khi thay đổi biến môi trường.
 
 Chia sẻ link nhóm từ **domain production cố định** thay vì URL preview của từng deployment. Nên dùng Neon branch riêng cho Production và Preview để tách dữ liệu thử nghiệm.
 

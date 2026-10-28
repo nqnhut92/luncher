@@ -25,3 +25,9 @@ export function readState(raw, ids) {
       .filter((h,i,a)=>a.findLastIndex(x=>x.date===h.date)===i);
   } catch { return []; }
 }
+// Re-spinning skips the shop currently shown, so "spin again" always changes the answer.
+export function pickOther(length, current = -1, random = Math.random) {
+  if (length < 2 || current < 0 || current >= length) return pickIndex(length, random);
+  const index = pickIndex(length-1, random);
+  return index >= current ? index+1 : index;
+}
