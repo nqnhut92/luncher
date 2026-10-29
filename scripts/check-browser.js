@@ -26,6 +26,10 @@ try {
   const errors = [];
   for (const page of [first, second]) page.on('pageerror', error => errors.push(error.message));
   await first.goto(origin);
+  const github = first.getByRole('link', { name: 'Mã nguồn Luncher trên GitHub (mở tab mới)', exact: true });
+  assert.equal(await github.getAttribute('href'), 'https://github.com/nqnhut92/luncher');
+  assert.equal(await github.getAttribute('target'), '_blank');
+  assert.equal(await github.getAttribute('rel'), 'noopener noreferrer');
   assert.equal(await first.locator('script[src*="/_vercel/insights/"]').count(),0,'development server must not initialize analytics');
   // Personal confirmation remains independent of shared-room data.
   await first.locator('#slot-lever').click(); await first.locator('#confirm').waitFor();
@@ -306,6 +310,7 @@ try {
   const drinkApiCalls=[];drinkPage.on('request',request=>{if(new URL(request.url()).pathname.startsWith('/api/'))drinkApiCalls.push(request.url());});
   await drinkPage.goto(origin);await drinkPage.locator('a.header-link[href="/chieunayuonggi"]').click();
   await drinkPage.waitForURL(origin+'/chieunayuonggi');
+  assert.equal(await drinkPage.getByRole('link', { name: 'Mã nguồn Luncher trên GitHub (mở tab mới)', exact: true }).getAttribute('href'), 'https://github.com/nqnhut92/luncher');
   assert.equal(await drinkPage.locator('h1').innerText().then(text=>text.replace(/\s+/g,' ')),'Chiều nay uống gì nhỉ?');
   assert.equal(await drinkPage.locator('.drink-list li').count(),12);
   const keysBefore=await drinkPage.evaluate(()=>Object.keys(localStorage).sort());

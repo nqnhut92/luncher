@@ -24,7 +24,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 - **Đơn nhóm Grab:** dán link đơn nhóm Grab (`https://…grab.com/…`) vào nhóm. Luncher đọc thông tin chia sẻ mà Grab công bố cho link đó: tiêu đề và ảnh có tên quán, địa chỉ, số sao. Trang nhóm hiện các thông tin này kèm mã QR. Khi chia sẻ link `/g/<code>` vào Zalo/Messenger/Slack/Teams, ảnh preview gồm ảnh quán và mã QR (Open Graph).
 - **Xem nhanh món hôm nay:** tiêu đề và mô tả preview của link nhóm ghi rõ món đã chốt hôm nay và giờ chốt, ví dụ "Hôm nay ăn Mì Quảng 🍜 · Hội ăn trưa".
 - **Xử lý thao tác đồng thời:** lượt chốt từ dữ liệu cũ không tự ghi đè quyết định mới của nhóm.
-- **Header cố định khi cuộn:** logo và nút đổi giao diện luôn hiện ở đầu màn hình. Đường phân cách chạy hết chiều ngang, nền bán trong suốt làm mờ nội dung phía dưới ở cả sáng/tối; trình duyệt không hỗ trợ blur dùng nền đặc.
+- **Header cố định khi cuộn:** logo, nút mã nguồn GitHub và nút đổi giao diện luôn hiện ở đầu màn hình. Nút GitHub mở [repository của dự án](https://github.com/nqnhut92/luncher) trong tab mới trên cả trang ăn trưa và trang đồ uống. Đường phân cách chạy hết chiều ngang, nền bán trong suốt làm mờ nội dung phía dưới ở cả sáng/tối; trình duyệt không hỗ trợ blur dùng nền đặc.
 - **Giao diện linh hoạt:** hỗ trợ điện thoại, ghi nhớ chế độ sáng/tối, giảm chuyển động theo thiết bị và không có âm thanh. Giao diện theo phong cách Liquid Glass: nút dạng viên thuốc, thẻ trong mờ và máy quay bằng kính trên nền màu dịu; phần chứa chữ dùng lớp kính đặc hơn để vẫn đạt độ tương phản WCAG AA. Vùng bấm cao tối thiểu 44px, và các lớp kính chuyển sang nền đặc khi thiết bị bật giảm độ trong suốt.
 
 ## Cách dùng nhóm ăn chung
