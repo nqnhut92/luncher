@@ -309,10 +309,12 @@ try {
   assert.equal(await drinkPage.locator('h1').innerText().then(text=>text.replace(/\s+/g,' ')),'Chiều nay uống gì nhỉ?');
   assert.equal(await drinkPage.locator('.drink-list li').count(),12);
   const keysBefore=await drinkPage.evaluate(()=>Object.keys(localStorage).sort());
+  assert.equal(await drinkPage.evaluate(()=>[...document.querySelectorAll('img.drink-art')].every(img=>img.complete&&img.naturalWidth>0)),true,'every shop logo loads');
+  assert.equal(await drinkPage.locator('img.drink-art').count(),99,'the reel (87 rows) and the list (12 shops) all show logos');
   const picks=[];
-  for(const trigger of ['#slot-lever','#spin','#spin']){
-    await drinkPage.locator(trigger).click();await drinkPage.locator('.result h2').filter({hasNotText:'Ly nước đang đợi'}).waitFor();
-    await drinkPage.waitForFunction(()=>!document.querySelector('#spin').disabled);
+  for(let spin=0;spin<12;spin++){
+    await drinkPage.locator(spin?'#spin':'#slot-lever').click();
+    await drinkPage.waitForFunction(()=>!document.querySelector('#spin').disabled&&!/Ly nước đang đợi/.test(document.querySelector('.result h2').innerText));
     const pick=await drinkPage.locator('.result h2').innerText();
     const centered=await drinkPage.locator('.reel-row').evaluateAll(rows=>{
       const window=document.querySelector('.slot-window').getBoundingClientRect();
@@ -320,9 +322,9 @@ try {
     });
     assert.equal(centered?.replace(/\s+/g,' ').trim(),pick,'the centered reel shop matches the picked shop');
     assert.equal(await drinkPage.locator('.drink-list li.is-picked b').innerText(),pick);
-    if(picks.length)assert.notEqual(pick,picks.at(-1),'spinning again changes the shop');
     picks.push(pick);
   }
+  assert.equal(new Set(picks).size,12,'twelve spins visit every shop exactly once before repeating');
   assert.deepEqual(await drinkPage.evaluate(()=>Object.keys(localStorage).sort()),keysBefore,'the drink picker writes no browser storage');
   assert.equal(await drinkPage.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'no horizontal scroll on mobile');
   await drinkPage.reload();

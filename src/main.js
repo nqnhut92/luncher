@@ -3,11 +3,12 @@ import {initializeAnalytics} from './analytics.js';
 import morphdom from 'morphdom';
 import {showToast} from './toast.js';
 import foods from './foods.json';
-import {dateKey,weekStart,availableFoods,pickIndex,readState} from './logic.js';
+import {dateKey,weekStart,availableFoods,readState} from './logic.js';
 import {readPersonal, confirmPersonal} from './activity.js';
 import {RECENT_GROUPS_KEY, readRecentGroups, rememberGroup, updateRememberedGroup} from './recent-groups.js';
 import {roomRequest, escapeHtml} from './groups.js';
 import {icon} from './icons.js';
+import {createSpinBag} from './spin-bag.js';
 import {leverSvg, reelSequence, runReel} from './slot.js';
 initializeAnalytics();
 const app = document.querySelector('#app');
@@ -16,6 +17,7 @@ let group = null, groupToday = null, loading = Boolean(groupId), busy = false, r
 let changingMeal = false, activityOpen = false, events = [], editingGrab = false, grabDraft = '';
 let recentGroups=[], recordedVisit=false, recentStorageFailed=false, menuOpen=false, celebrate=false;
 try{recentGroups=readRecentGroups(localStorage.getItem(RECENT_GROUPS_KEY));}catch{}
+const bag = createSpinBag();
 let history = [], category = 'all', repeat = false, result = null, spinning = false, rotation = 0;
 if (!groupId) {
  try {
@@ -135,7 +137,7 @@ ${leverSvg}
 function spin() {
  if(spinning||busy||(currentChoice()&&!changingMeal)||(groupId&&(!group||loading)))return;
  const pool=availableFoods(foods,history,category,repeat,calendarDate()).filter(f=>!changingMeal||f.id!==currentChoice()?.foodId);if(!pool.length)return;
- const index=pickIndex(pool.length);spinning=true;result=null;rotation=0;render();
+ const pickedId=bag.draw(pool.map(f=>f.id)),index=pool.findIndex(f=>f.id===pickedId);spinning=true;result=null;rotation=0;render();
  rotation=pool.length*5+index;
  runReel(document.querySelector('.wheel'),rotation,()=>{spinning=false;result=pool[index];render()});
 }

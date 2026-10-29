@@ -1,14 +1,14 @@
 [
-  {"id": "koi-the", "name": "Koi Thé", "mark": "KOI", "color": "#8c6210"},
-  {"id": "alittle", "name": "Một Chút Chút ALittle", "mark": "MCC", "color": "#b03a5b"},
-  {"id": "phuc-long", "name": "Phúc Long", "mark": "PL", "color": "#2e6b3c"},
-  {"id": "tea-joy", "name": "TEA JOY", "mark": "TJ", "color": "#c2410c"},
-  {"id": "by-joy", "name": "BY JOY", "mark": "BJ", "color": "#7c3aed"},
-  {"id": "bong-tra", "name": "Bông Trà", "mark": "BT", "color": "#be185d"},
-  {"id": "gong-cha", "name": "Gong Cha", "mark": "GC", "color": "#b91c1c"},
-  {"id": "phong-tra", "name": "Phong Trà", "mark": "PT", "color": "#0f766e"},
-  {"id": "dabacha", "name": "Dabacha", "mark": "DBC", "color": "#6d4c41"},
-  {"id": "lam-tra", "name": "Lam Trà", "mark": "LT", "color": "#1d4ed8"},
-  {"id": "yen-ban", "name": "Yên Bản", "mark": "YB", "color": "#4d7c0f"},
-  {"id": "phe-la", "name": "Phê La", "mark": "PLA", "color": "#374151"}
+  {"id": "koi-the", "name": "Koi Thé", "logo": "/images/drinks/koi-the.jpg"},
+  {"id": "alittle", "name": "Một Chút Chút ALittle", "logo": "/images/drinks/alittle.jpg"},
+  {"id": "phuc-long", "name": "Phúc Long", "logo": "/images/drinks/phuc-long.jpg"},
+  {"id": "tea-joy", "name": "TEA JOY", "logo": "/images/drinks/tea-joy.jpg"},
+  {"id": "by-joy", "name": "BY JOY", "logo": "/images/drinks/by-joy.jpg"},
+  {"id": "bong-tra", "name": "Bông Trà", "logo": "/images/drinks/bong-tra.jpg"},
+  {"id": "gong-cha", "name": "Gong Cha", "logo": "/images/drinks/gong-cha.jpg"},
+  {"id": "phong-tra", "name": "Phong Trà", "logo": "/images/drinks/phong-tra.jpg"},
+  {"id": "dabacha", "name": "Dabacha", "logo": "/images/drinks/dabacha.jpg"},
+  {"id": "lam-tra", "name": "Lam Trà", "logo": "/images/drinks/lam-tra.jpg"},
+  {"id": "yen-ban", "name": "Yên Bản", "logo": "/images/drinks/yen-ban.jpg"},
+  {"id": "phe-la", "name": "Phê La", "logo": "/images/drinks/phe-la.jpg"}
 ]

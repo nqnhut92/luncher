@@ -1,15 +1,16 @@
 import './style.css';
 import morphdom from 'morphdom';
 import drinks from './drinks.json';
-import {pickOther} from './logic.js';
+import {createSpinBag} from './spin-bag.js';
 import {escapeHtml} from './groups.js';
 import {icon} from './icons.js';
 import {leverSvg, reelSequence, runReel, ROW_HEIGHT} from './slot.js';
 // Personal-only afternoon drink picker: no group, no history, nothing stored besides the theme.
 const app = document.querySelector('#app');
+const bag = createSpinBag();
 let result = null, spinning = false, rotation = 0, celebrate = false;
 function drinkArt(drink) {
- if(drink.logo)return `<img class="drink-art" src="${escapeHtml(drink.logo)}" alt="" width="104" height="104" loading="lazy">`;
+ if(drink.logo)return `<img class="drink-art" src="${escapeHtml(drink.logo)}" alt="" width="104" height="104">`;
  return `<span class="drink-art" style="--drink:${drink.color}" aria-hidden="true">${escapeHtml(drink.mark)}</span>`;
 }
 function render() {
@@ -29,7 +30,7 @@ ${leverSvg}
 }
 function spin() {
  if(spinning)return;
- const index=pickOther(drinks.length,drinks.indexOf(result));
+ const pickedId=bag.draw(drinks.map(d=>d.id)),index=drinks.findIndex(d=>d.id===pickedId);
  spinning=true;result=null;render();
  rotation=drinks.length*5+index;
  runReel(document.querySelector('.wheel'),rotation,()=>{spinning=false;result=drinks[index];celebrate=true;render();setTimeout(()=>{celebrate=false;render()},900);});

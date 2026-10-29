@@ -302,3 +302,7 @@ html[data-theme=dark] .machine-controls .hint,html[data-theme=dark] .slot-captio
 @media(max-width:1220px){.is-drinks .intro p{position:static;margin-top:12px}}
 @media(max-width:650px){.header-right{gap:12px}.reel-row .drink-art{font-size:18px}.result-emoji .drink-art{width:64px;font-size:20px}}
 @media(max-width:480px){.header-link{width:44px;padding:0;justify-content:center}.header-link span:not([aria-hidden]){position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}.reel-row .drink-art{font-size:15px}}
+/* Real shop logos are square pictures: keep them whole in a rounded tile instead of cropping to the badge circle. */
+img.drink-art{border-radius:22%;background:#fff}
+/* Real shop logos are square pictures: keep them whole in a rounded tile instead of cropping to the badge circle. */
+img.drink-art{border-radius:22%;background:#fff;box-shadow:0 0 0 1px rgba(90,63,42,.14),0 3px 8px rgba(40,30,20,.14)}
