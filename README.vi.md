@@ -184,3 +184,7 @@ Phiên bản hiện tại chưa có sửa danh sách món riêng, nhập/xuất 
 ## Nguồn cảm hứng
 
 Lấy cảm hứng từ ý tưởng chọn món trưa của [truanayangi.com](https://truanayangi.com/). Mã nguồn, giao diện và danh sách món của Luncher được viết độc lập; không tái sử dụng mã hoặc tài nguyên từ repository tham khảo.
+
+## Giấy phép
+
+Mã nguồn, tài liệu và hình minh họa món ăn của Luncher được phát hành theo [giấy phép MIT](LICENSE). Logo các quán đồ uống trong [`public/images/drinks/`](public/images/drinks/) không thuộc giấy phép này: đó là nhãn hiệu của chủ sở hữu từng quán và chỉ dùng để nhận diện quán. Muốn dùng lại các logo này, hãy xin phép chủ sở hữu.

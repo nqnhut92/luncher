@@ -184,3 +184,7 @@ Read [AGENTS.md](AGENTS.md) before changing this repository. Claude Code imports
 ## Inspiration
 
 Inspired by the lunch-selection concept at [truanayangi.com](https://truanayangi.com/). Luncher's implementation, interface, and food catalog were written independently; no source code or assets from the reference repository were reused.
+
+## License
+
+Luncher's code, documentation and food illustrations are released under the [MIT License](LICENSE). The drink shop logos in [`public/images/drinks/`](public/images/drinks/) are not covered by it: they are trademarks of their respective owners, used only to identify each shop. Reuse them only with the owners' permission.
