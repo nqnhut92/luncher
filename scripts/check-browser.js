@@ -199,11 +199,16 @@ try {
       await settle();await layoutPage.locator('.activity-log summary').scrollIntoViewIfNeeded();await settle();
       assert.equal(await layoutPage.locator('.week-list').evaluate(el=>el.scrollHeight===el.clientHeight),true,'seven meals must fit without growing the weekly card');
       assert.equal(await layoutPage.locator('header').evaluate(el=>el.getBoundingClientRect().top),0,`header stays pinned at ${width}px in ${theme}`);
-      assert.notEqual(await layoutPage.locator('header').evaluate(el=>getComputedStyle(el).backgroundColor),'rgba(0, 0, 0, 0)');
-      assert.equal(await layoutPage.locator('header').evaluate(el=>Math.abs(el.getBoundingClientRect().width-document.body.getBoundingClientRect().width)<1),true,'header divider spans the full page width outside the scrollbar gutter');
-      assert.equal(await layoutPage.locator('header').evaluate(el=>getComputedStyle(el).borderBottomWidth),'1px');
-      assert.match(await layoutPage.locator('header').evaluate(el=>getComputedStyle(el).backdropFilter),/blur\(16px\)/);
-      assert.equal(await layoutPage.locator('.header-inner').evaluate(el=>Math.abs(el.getBoundingClientRect().left-document.querySelector('main').getBoundingClientRect().left)<1),true,'header content stays aligned with main');
+      assert.notEqual(await layoutPage.locator('.fe-header').evaluate(el=>getComputedStyle(el).backgroundImage),'none');
+      const chrome = await layoutPage.locator('.fe-header').evaluate(el => {
+        const rect = el.getBoundingClientRect(), style = getComputedStyle(el);
+        return {left:rect.left,right:rect.right,viewport:innerWidth,height:rect.height,radius:style.borderRadius,border:style.borderBottomWidth,blur:style.backdropFilter};
+      });
+      assert.ok(chrome.left >= 16 && chrome.right <= chrome.viewport - 16, 'floating header has side gutters');
+      assert.ok(chrome.height >= 64, 'header retains minimum height');
+      assert.equal(chrome.radius, width <= 860 ? '20px' : '24px');
+      assert.equal(chrome.border, '1px');
+      assert.match(chrome.blur, /blur\(26px\)/);
       assert.equal(await layoutPage.locator('#theme').evaluate(el=>{const r=el.getBoundingClientRect();return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}),true,'sticky theme switch remains clickable');
       assert.equal(await layoutPage.locator('.slot-lever').evaluate(el=>el.getBoundingClientRect().left>=document.querySelector('.slot-window').getBoundingClientRect().right),true,'lever assembly stays outside the reel window');
       assert.equal(await layoutPage.locator('#spin').evaluate(el=>Boolean(el.closest('.slot-machine'))),true,'spin button belongs to the cabinet base');
