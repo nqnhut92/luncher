@@ -315,6 +315,8 @@ img.drink-art{border-radius:22%;background:#fff;box-shadow:0 0 0 1px rgba(90,63,
 @media (max-width: 1220px) { .fe-header-wrap { --fe-content-width: calc(100% - 60px); } }
 @media (max-width: 650px) { .fe-header-wrap { --fe-content-width: calc(100% - 40px); } }
 
+.fe-header .brand { font-size: 21px; }
+
 /* BEGIN frontend-header-design v1 */
 .fe-header-wrap.fe-header-wrap {
   position: sticky;
@@ -355,17 +357,6 @@ img.drink-art{border-radius:22%;background:#fff;box-shadow:0 0 0 1px rgba(90,63,
   backdrop-filter: blur(26px) saturate(180%);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.9), inset 0 -1px 0 rgba(120,140,175,.1), 0 10px 34px rgba(54,70,107,.1);
   pointer-events: auto;
-}
-.fe-header :is(.brand, .logo) {
-  font-size: 21px;
-  flex-shrink: 0;
-}
-.fe-header :is(.brand-mark, .brand-symbol, .brand-icon) {
-  box-sizing: border-box;
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  flex-shrink: 0;
 }
 .fe-header :is(.header-actions, .header-tools, .header-right, .glass-actions) {
   display: flex;
