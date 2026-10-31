@@ -317,7 +317,7 @@ img.drink-art{border-radius:22%;background:#fff;box-shadow:0 0 0 1px rgba(90,63,
 
 .fe-header .brand { font-size: 21px; }
 
-/* BEGIN frontend-header-design v1 */
+/* BEGIN frontend-header-design */
 .fe-header-wrap.fe-header-wrap {
   position: sticky;
   top: 0;
@@ -415,6 +415,63 @@ img.drink-art{border-radius:22%;background:#fff;box-shadow:0 0 0 1px rgba(90,63,
   box-shadow: inset 0 1px 0 rgba(255,255,255,.12);
 }
 [data-theme=dark] .fe-header nav a:hover { background: rgba(255,255,255,.07); }
+/* Collapsed navigation: below the breakpoint, links move into a disclosure panel opened by a hamburger at the far right. */
+.fe-header .header-menu { display: flex; align-items: center; gap: 6px; }
+/* Above the breakpoint the links sit centered between the brand and the actions. */
+.fe-header > .header-menu { margin-inline: auto; }
+.fe-header > .header-menu ~ .header-actions { margin-left: 0; }
+/* Optional split menu: .menu-primary is the centered navigation; .menu-secondary (external links) renders as buttons beside the actions above the breakpoint. */
+@media (min-width: 761px) {
+  .fe-header > .header-menu.header-menu--split { display: contents; }
+  .fe-header .header-menu--split > .menu-primary { display: flex; align-items: center; gap: 6px; margin-inline: auto; }
+  .fe-header .header-menu--split > .menu-secondary { display: flex; align-items: center; gap: 6px; }
+}
+.fe-header .mobile-menu { display: none; }
+.fe-header .mobile-menu .icon-close { display: none; }
+.fe-header .mobile-menu[aria-expanded=true] .icon-open { display: none; }
+.fe-header .mobile-menu[aria-expanded=true] .icon-close { display: inline-flex; }
+@media (max-width: 760px) {
+  .fe-header .mobile-menu { display: inline-grid; place-items: center; }
+  .fe-header .header-menu {
+    display: none;
+    position: absolute;
+    margin: 0;
+    top: calc(100% + 8px);
+    right: 0;
+    z-index: 2;
+    box-sizing: border-box;
+    width: min(320px, 100%);
+    flex-direction: column;
+    align-items: stretch;
+    gap: 2px;
+    padding: 8px;
+    border: 1px solid rgba(255,255,255,.7);
+    border-radius: 20px;
+    background: #f4f7fc;
+    box-shadow: 0 18px 44px rgba(54,70,107,.2);
+  }
+  .fe-header[data-menu-open] .header-menu { display: flex; }
+  .fe-header .header-menu--split > :is(.menu-primary, .menu-secondary) { display: flex; flex-direction: column; gap: 2px; }
+  .fe-header .header-menu.header-menu :is(a, button) {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    font-size: 15px;
+    text-align: left;
+  }
+  .fe-header .header-menu.header-menu :is(a, button):hover { background: rgba(120,140,175,.14); }
+  .fe-header .header-menu.header-menu a[aria-current=page] { background: rgba(120,140,175,.18); }
+  [data-theme=dark] .fe-header .header-menu { border-color: rgba(255,255,255,.09); background: #202735; box-shadow: 0 18px 44px rgba(0,0,0,.45); }
+  [data-theme=dark] .fe-header .header-menu.header-menu :is(a, button):hover { background: rgba(255,255,255,.07); }
+  [data-theme=dark] .fe-header .header-menu.header-menu a[aria-current=page] { background: rgba(255,255,255,.13); }
+}
 @media (max-width: 860px) {
   .fe-header.fe-header {
     gap: 8px;
@@ -428,6 +485,7 @@ img.drink-art{border-radius:22%;background:#fff;box-shadow:0 0 0 1px rgba(90,63,
     padding-inline: 10px;
   }
 }
+/* Last-resort safety net only: a header that wraps at 320px is a defect to fix by compacting the brand, not a layout. */
 @media (max-width: 360px) {
   .fe-header.fe-header { flex-wrap: wrap; }
 }
@@ -441,5 +499,6 @@ img.drink-art{border-radius:22%;background:#fff;box-shadow:0 0 0 1px rgba(90,63,
 }
 @media (forced-colors: active) {
   .fe-header.fe-header { background: Canvas; border-color: CanvasText; box-shadow: none; }
+  .fe-header .header-menu { background: Canvas; border-color: CanvasText; box-shadow: none; }
 }
 /* END frontend-header-design */
