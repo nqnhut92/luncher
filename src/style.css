@@ -502,3 +502,9 @@ img.drink-art{border-radius:22%;background:#fff;box-shadow:0 0 0 1px rgba(90,63,
   .fe-header .header-menu { background: Canvas; border-color: CanvasText; box-shadow: none; }
 }
 /* END frontend-header-design */
+/* Very narrow phones (320px): scale the logo and wordmark down together and tighten the controls so the header stays on one row. */
+@media (max-width: 340px) {
+  .fe-header .brand { font-size: 18px; gap: 6px; }
+  .fe-header .brand-icon svg { width: 26px; height: 26px; }
+  .fe-header .header-right { gap: 3px; }
+}
