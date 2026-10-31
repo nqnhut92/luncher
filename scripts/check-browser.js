@@ -202,9 +202,11 @@ try {
       assert.notEqual(await layoutPage.locator('.fe-header').evaluate(el=>getComputedStyle(el).backgroundImage),'none');
       const chrome = await layoutPage.locator('.fe-header').evaluate(el => {
         const rect = el.getBoundingClientRect(), style = getComputedStyle(el);
-        return {left:rect.left,right:rect.right,viewport:innerWidth,height:rect.height,radius:style.borderRadius,border:style.borderBottomWidth,blur:style.backdropFilter};
+        const content = document.querySelector('main').getBoundingClientRect();
+        return {left:rect.left,right:rect.right,contentLeft:content.left,contentRight:content.right,viewport:innerWidth,height:rect.height,radius:style.borderRadius,border:style.borderBottomWidth,blur:style.backdropFilter};
       });
       assert.ok(chrome.left >= 16 && chrome.right <= chrome.viewport - 16, 'floating header has side gutters');
+      assert.ok(Math.abs(chrome.left - chrome.contentLeft) < 1 && Math.abs(chrome.right - chrome.contentRight) < 1, 'header edges follow the main content container');
       assert.ok(chrome.height >= 64, 'header retains minimum height');
       assert.equal(chrome.radius, width <= 860 ? '20px' : '24px');
       assert.equal(chrome.border, '1px');

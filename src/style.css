@@ -309,18 +309,23 @@ img.drink-art{border-radius:22%;background:#fff}
 /* Real shop logos are square pictures: keep them whole in a rounded tile instead of cropping to the badge circle. */
 img.drink-art{border-radius:22%;background:#fff;box-shadow:0 0 0 1px rgba(90,63,42,.14),0 3px 8px rgba(40,30,20,.14)}
 
+/* Follow this app’s content container and responsive gutters. */
+
+.fe-header-wrap { --fe-content-width: 100%; --fe-content-max: 1160px; }
+@media (max-width: 1220px) { .fe-header-wrap { --fe-content-width: calc(100% - 60px); } }
+@media (max-width: 650px) { .fe-header-wrap { --fe-content-width: calc(100% - 40px); } }
+
 /* BEGIN frontend-header-design v1 */
 .fe-header-wrap.fe-header-wrap {
-  --fe-gutter: clamp(16px, 3vw, 48px);
   position: sticky;
   top: 0;
   z-index: 40;
   box-sizing: border-box;
-  width: 100%;
-  max-width: 1550px;
+  width: var(--fe-content-width, 100%);
+  max-width: var(--fe-content-max, 100%);
   height: auto;
   margin: 0 auto;
-  padding: 14px var(--fe-gutter) 0;
+  padding: 14px 0 0;
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -408,7 +413,7 @@ img.drink-art{border-radius:22%;background:#fff;box-shadow:0 0 0 1px rgba(90,63,
 }
 /* Navigation keeps its existing responsive visibility. */
 .fe-header nav { gap: 4px; }
-.fe-header nav a { border: 0; text-decoration: none; }
+.fe-header nav a { display: inline-flex; align-items: center; justify-content: center; border: 0; text-decoration: none; }
 .fe-header nav a:is(.active, .nav-active, [aria-current=page]) {
   background: rgba(255,255,255,.85);
   box-shadow: inset 0 1px 0 #fff, 0 2px 8px rgba(49,74,108,.1);

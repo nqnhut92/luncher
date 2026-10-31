@@ -188,3 +188,7 @@ Lấy cảm hứng từ ý tưởng chọn món trưa của [truanayangi.com](ht
 ## Giấy phép
 
 Mã nguồn, tài liệu và hình minh họa món ăn của Luncher được phát hành theo [giấy phép MIT](LICENSE). Logo các quán đồ uống trong [`public/images/drinks/`](public/images/drinks/) không thuộc giấy phép này: đó là nhãn hiệu của chủ sở hữu từng quán và chỉ dùng để nhận diện quán. Muốn dùng lại các logo này, hãy xin phép chủ sở hữu.
+
+## Tùy chọn giao diện
+
+Nút giao diện chuyển lần lượt **Theo hệ thống → Sáng → Tối → Theo hệ thống**; biểu tượng thể hiện lựa chọn hiện tại. Chế độ Theo hệ thống cập nhật ngay khi thiết bị đổi giao diện; lựa chọn Sáng hoặc Tối được giữ cố định. Lựa chọn được lưu khi tải lại và đồng bộ giữa các tab. Khi trình duyệt chặn lưu trữ, cả ba chế độ vẫn hoạt động trong tab hiện tại.

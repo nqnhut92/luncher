@@ -1,3 +1,4 @@
+import {createThemeController, paintThemeButton} from './theme-controller.js';
 import './style.css';
 import morphdom from 'morphdom';
 import drinks from './drinks.json';
@@ -7,6 +8,7 @@ import {icon} from './icons.js';
 import {leverSvg, reelSequence, runReel, ROW_HEIGHT} from './slot.js';
 // Personal-only afternoon drink picker: no group, no history, nothing stored besides the theme.
 const app = document.querySelector('#app');
+const themeController = createThemeController({storageKey:'luncher-theme', colors:{light:'#faf7f2',dark:'#161a18'}, onChange:state=>paintThemeButton(document.querySelector('#theme'),state,'vi')});
 const bag = createSpinBag();
 let result = null, spinning = false, rotation = 0, celebrate = false;
 function drinkArt(drink) {
@@ -24,7 +26,8 @@ ${leverSvg}
  <aside><section class="side-card"><div class="card-heading"><div class="eyebrow">CÓ GÌ TRONG VÒNG QUAY?</div><span>${size}</span></div><h2>Quán quen buổi chiều.</h2><ul class="drink-list">${drinks.map(d=>`<li class="${result?.id===d.id?'is-picked':''}">${drinkArt(d)}<b>${escapeHtml(d.name)}</b>${result?.id===d.id?`<span class="check"><span class="sr-only">Vừa chọn</span>${icon('check',16)}</span>`:''}</li>`).join('')}</ul></section></aside></section>
  </main><footer><span>luncher. <span class="muted">/ bớt phân vân, thêm ngon miệng.</span></span><span>Một buổi chiều tỉnh táo nhé</span></footer>`;
  morphdom(app, `<div id="app">${markup}</div>`, {childrenOnly:true, onBeforeElUpdated:(from,to)=>!from.isEqualNode(to)});
- document.querySelector('#theme').onclick=()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('luncher-theme',theme)}catch{}render();};
+ paintThemeButton(document.querySelector('#theme'),themeController.state(),'vi');
+ document.querySelector('#theme').onclick=()=>themeController.cycle();
  document.querySelector('#spin').onclick=spin;
  document.querySelector('#slot-lever').onclick=spin;
 }

@@ -1,3 +1,4 @@
+import {createThemeController, paintThemeButton} from './theme-controller.js';
 import './style.css';
 import {initializeAnalytics} from './analytics.js';
 import morphdom from 'morphdom';
@@ -12,6 +13,7 @@ import {createSpinBag} from './spin-bag.js';
 import {leverSvg, reelSequence, runReel} from './slot.js';
 initializeAnalytics();
 const app = document.querySelector('#app');
+const themeController = createThemeController({storageKey:'luncher-theme', colors:{light:'#faf7f2',dark:'#161a18'}, onChange:state=>paintThemeButton(document.querySelector('#theme'),state,'vi')});
 let groupId = location.pathname.startsWith('/g/') ? location.pathname.split('/')[2] || 'invalid' : null;
 let group = null, groupToday = null, loading = Boolean(groupId), busy = false, refreshing = false, editingName = false, nameDraft = '';
 let changingMeal = false, activityOpen = false, events = [], editingGrab = false, grabDraft = '';
@@ -90,7 +92,8 @@ ${leverSvg}
    return true;
   },
  });
- document.querySelector('#theme').onclick=()=>{const theme=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=theme;try{localStorage.setItem('luncher-theme',theme)}catch{}document.querySelector('#theme').innerHTML=icon(theme==='dark'?'sun':'moon',20);};
+ paintThemeButton(document.querySelector('#theme'),themeController.state(),'vi');
+ document.querySelector('#theme').onclick=()=>themeController.cycle();
  document.querySelectorAll('[data-forget-group]').forEach(button=>button.onclick=()=>forgetGroup(button.dataset.forgetGroup));
  document.querySelector('#spin').onclick=spin;
  document.querySelector('#slot-lever').onclick=spin;

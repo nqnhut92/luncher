@@ -188,3 +188,7 @@ Inspired by the lunch-selection concept at [truanayangi.com](https://truanayangi
 ## License
 
 Luncher's code, documentation and food illustrations are released under the [MIT License](LICENSE). The drink shop logos in [`public/images/drinks/`](public/images/drinks/) are not covered by it: they are trademarks of their respective owners, used only to identify each shop. Reuse them only with the owners' permission.
+
+## Appearance preferences
+
+The theme button cycles **System → Light → Dark → System**. Its icon shows the current preference. System follows operating-system changes immediately; an explicit Light or Dark choice stays fixed. Preferences persist across reloads and sync between tabs. If browser storage is unavailable, the current tab still supports all three modes.
