@@ -132,11 +132,7 @@ test('shared group page carries escaped OG tags and a versioned QR image', async
 
 test('QR endpoint renders the room link as PNG and 404s without one', async () => {
   const id = await store.create('QR');
-  const art = new PNG({ width: 60, height: 45 });
-  art.data.fill(200);
-  for (let i = 3; i < art.data.length; i += 4) art.data[i] = 255;
-  const loaded = [];
-  const qr = async query => { const res = response(); await createQrHandler(() => store, async url => { loaded.push(url); return art; })({ method: 'GET', query, headers: {} }, res); return res; };
+  const qr = async query => { const res = response(); await createQrHandler(() => store)({ method: 'GET', query, headers: {} }, res); return res; };
   assert.equal((await qr({ id })).statusCode, 404);
   assert.equal((await qr({ id: '../etc' })).statusCode, 400);
   await store.setGrabUrl({ id, revision: 0, grabUrl: 'https://r.grab.com/g/abc' });
@@ -144,12 +140,12 @@ test('QR endpoint renders the room link as PNG and 404s without one', async () =
   assert.equal(ok.statusCode, 200);
   assert.equal(ok.headers['Content-Type'], 'image/png');
   assert.deepEqual([...ok.body.subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
-  assert.equal(loaded.length, 0, 'no art is fetched for links without a scanned image');
   await store.setGrabUrl({ id, revision: 1, grabUrl: 'https://r.grab.com/g/abc', grabImage: scanned.image });
   const card = PNG.sync.read((await qr({ id })).body);
-  assert.deepEqual([card.width, card.height, loaded], [1200, 630, [scanned.image]]);
+  assert.deepEqual([card.width, card.height], [1200, 630]);
   const pixel = (x, y) => [...card.data.subarray((y * 1200 + x) * 4, (y * 1200 + x) * 4 + 3)];
-  assert.deepEqual(pixel(300, 315), [200, 200, 200], 'Grab art fills the left side');
+  assert.deepEqual(pixel(300, 315), [250, 247, 242], 'store art is not drawn beside the QR');
+  assert.deepEqual(pixel(600, 70), [255, 255, 255], 'the QR quiet zone sits at the centre of the card');
   const square = PNG.sync.read((await qr({ id, layout: 'square' })).body);
-  assert.deepEqual([square.width, square.height, loaded.length], [480, 480, 1]);
+  assert.deepEqual([square.width, square.height], [480, 480]);
 });
