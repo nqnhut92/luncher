@@ -21,7 +21,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 - **Không quay trùng liên tục:** hai vòng quay dùng chung một bộ chọn rút không hoàn lại (`src/spin-bag.js`). Trong một lần mở trang, mỗi món hoặc quán đang có sẽ ra đúng một lần rồi mới lặp, nên quay nhiều lần không còn cảm giác chỉ quanh quẩn vài lựa chọn. Việc "đã rút" chỉ nằm trong bộ nhớ trang, tải lại là bắt đầu vòng mới; nó tách biệt với món đã chốt, quy tắc không lặp trong tuần và dữ liệu nhóm.
 - **Tránh lặp trong tuần:** món đã chốt được loại khỏi các lần quay tiếp trong tuần, trừ khi bật tùy chọn cho phép lặp.
 - **Nhật ký thay đổi:** giữ lại từng lần chốt và đổi món, gồm thời gian, món cũ và món mới.
-- **Đơn nhóm Grab:** dán link đơn nhóm Grab (`https://…grab.com/…`) vào nhóm. Luncher đọc thông tin chia sẻ mà Grab công bố cho link đó: tiêu đề và ảnh có tên quán, địa chỉ, số sao. Trang nhóm hiện các thông tin này kèm mã QR. Khi chia sẻ link `/g/<code>` vào Zalo/Messenger/Slack/Teams, ảnh preview là mã QR (Open Graph).
+- **Đơn nhóm Grab:** dán link đơn nhóm Grab (`https://…grab.com/…`) vào nhóm. Luncher đọc thông tin chia sẻ mà Grab công bố cho link đó: tiêu đề và ảnh có tên quán, địa chỉ, số sao. Trang nhóm hiện các thông tin này kèm mã QR. Khi chia sẻ link `/g/<code>` vào Zalo/Messenger/Slack/Teams, trang cung cấp mã QR cho ảnh preview (Open Graph); việc hiển thị phụ thuộc ứng dụng chat.
 - **Xem nhanh món hôm nay:** tiêu đề và mô tả preview của link nhóm ghi rõ món đã chốt hôm nay và giờ chốt, ví dụ "Hôm nay ăn Mì Quảng 🍜 · Hội ăn trưa".
 - **Xử lý thao tác đồng thời:** lượt chốt từ dữ liệu cũ không tự ghi đè quyết định mới của nhóm.
 - **Header cố định khi cuộn:** logo, nút mã nguồn GitHub và nút đổi giao diện luôn hiện ở đầu màn hình. Nút GitHub mở [repository của dự án](https://github.com/nqnhut92/luncher) trong tab mới trên cả trang ăn trưa và trang đồ uống. Header nổi bo góc dùng nền kính bán trong suốt ở cả sáng/tối; trình duyệt không hỗ trợ blur hoặc thiết bị yêu cầu giảm độ trong suốt dùng nền đặc.
@@ -30,7 +30,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 ## Cách dùng nhóm ăn chung
 
 1. Nhập tên nhóm ở trang chính.
-2. Copy link `/g/<code>` được tạo và ghim trong nhóm chat.
+2. Bấm **Copy link nhóm** rồi ghim trong nhóm chat. Mỗi lần copy tự thêm `?v=<token>` mới vào `/g/<code>` để giảm việc dùng lại preview cũ; mọi phiên bản vẫn mở cùng nhóm.
 3. Quay thử để tìm món phù hợp. Việc quay diễn ra riêng trên từng máy, chưa thay đổi món của nhóm.
 4. Chốt món để lưu cho cả nhóm. Vòng quay được khóa cho ngày đó.
 5. Muốn đổi, bấm **Đổi món hôm nay**. Món cũ vẫn được giữ cho tới khi chốt món mới; hủy đổi không thay đổi thực đơn.
@@ -58,7 +58,7 @@ Trong nhóm, thêm link đơn nhóm Grab, lưu rồi chia sẻ link nhóm Lunche
 
 Khi lưu link, server đọc thông tin chia sẻ của Grab, từ link chuyển hướng của link rút gọn Grab hoặc từ thẻ Open Graph của trang Grab. Server chỉ đi theo chuyển hướng HTTPS trên các tên miền Grab được phép, trong 4 giây và tối đa 256 KB. Server chỉ giữ tiêu đề (tối đa 120 ký tự) và ảnh chia sẻ đặt trên `grab.com`. Grab không công bố tên quán dạng chữ, nên tên quán, địa chỉ và số sao chỉ nằm trong ảnh chia sẻ của Grab. Nếu không đọc được, link vẫn được lưu.
 
-Trang nhóm hiện ảnh chia sẻ và mã QR dẫn tới link Grab đã lưu. `/g/<code>` trả giao diện cùng metadata Open Graph được tạo trên server. Tiêu đề và mô tả ghi món đã chốt hôm nay, giờ chốt và tiêu đề từ Grab. `/api/qr?id=<code>` tạo ảnh PNG 1200×630 chỉ có mã QR ở giữa, để ứng dụng chat cắt ảnh thành thumbnail vẫn thấy mã. Ảnh chia sẻ của Grab chỉ hiện trên trang nhóm, không có trong ảnh preview. Ứng dụng chat có thể dùng ảnh này làm preview, nhưng cũng có thể giữ ảnh cũ trong cache hoặc không hiển thị ảnh. Đổi link Grab sẽ đổi URL phiên bản ảnh; thao tác này không ép ứng dụng chat làm mới tin nhắn đã gửi.
+Trang nhóm hiện ảnh chia sẻ và mã QR dẫn tới link Grab đã lưu. `/g/<code>` trả giao diện cùng metadata Open Graph được tạo trên server. Tiêu đề và mô tả ghi món đã chốt hôm nay, giờ chốt và tiêu đề từ Grab. `/api/qr?id=<code>` tạo ảnh PNG 1200×630 chỉ có mã QR ở giữa, để ứng dụng chat cắt ảnh thành thumbnail vẫn thấy mã. Ảnh chia sẻ của Grab chỉ hiện trên trang nhóm, không có trong ảnh preview. Ứng dụng chat có thể dùng ảnh này làm preview, nhưng cũng có thể giữ ảnh cũ trong cache hoặc không hiển thị ảnh. Đổi link Grab sẽ đổi URL phiên bản ảnh. Nút **Copy link nhóm** còn thêm phiên bản mới vào link chia sẻ, `og:url` và URL ảnh QR, kèm metadata ảnh Twitter tương ứng. Cách này giúp tránh preview cũ nhưng không ép ứng dụng chat hiện QR hay làm mới tin nhắn đã gửi. Cần kiểm tra preview trên Teams desktop sau khi deploy; kiểm thử local chỉ xác minh metadata và phản hồi ảnh.
 
 Link đã lưu không tự đặt lại mỗi ngày. Hãy thay hoặc xóa khi đơn kết thúc. Luncher không tạo đơn Grab, kiểm tra hạn đơn hoặc gom đơn từng người. Chia sẻ link nhóm cũng cho người nhận và dịch vụ tạo preview khả năng truy cập link Grab và ảnh chia sẻ đã lưu. Luncher không theo dõi trạng thái đơn Grab. Thông tin chia sẻ được lấy lúc lưu link, còn nội dung preview phản ánh món đã chốt tại thời điểm ứng dụng chat tải preview.
 

@@ -143,16 +143,28 @@ try {
   const headings = await second.locator('.side-card .eyebrow').allTextContents();
   assert.ok(headings.every(text => !/^0[12] \//.test(text)));
   // A new toast replaces the old one and gets a fresh three-second timer.
-  await first.evaluate(() => { navigator.clipboard.writeText = async () => {}; });
+  await first.evaluate(() => { window.copiedLinks = []; navigator.clipboard.writeText = async text => { window.copiedLinks.push(text); }; });
   await first.clock.install();
   await first.clock.pauseAt(new Date(Date.now() + 1000));
   const beforeToast = await first.locator('.workspace').boundingBox();
   await first.locator('#copy-group').click();
   assert.match(await first.locator('.toast-message').innerText(), /Đã copy link nhóm/);
   assert.equal((await first.locator('.workspace').boundingBox()).y, beforeToast.y);
+  const copied = new URL(await first.evaluate(() => window.copiedLinks.at(-1)));
+  assert.equal(copied.origin + copied.pathname, roomUrl);
+  assert.ok(copied.searchParams.get('v'));
+  const copiedPreview = await (await fetch(copied)).text();
+  assert.ok(copiedPreview.includes(`<meta property="og:url" content="${copied.href}">`));
+  assert.equal(copiedPreview.includes('id="app"'), true);
+  await second.goto(copied.href);
+  await second.locator('.grab-qr').waitFor();
+  assert.equal(await second.locator('.group-bar h2').innerText(), 'Hội ăn trưa mới');
+  assert.equal(await second.locator('.grab-qr').evaluate(img => img.complete && img.naturalWidth === 480), true);
+
   await first.clock.fastForward(2000);
   assert.equal(await first.locator('.toast').isVisible(), true);
   await first.locator('#copy-group').click();
+  assert.notEqual(await first.evaluate(() => window.copiedLinks.at(-1)), copied.href, 'every copy gets a fresh version');
   await first.clock.fastForward(1200);
   assert.equal(await first.locator('.toast').isVisible(), true, 'previous timer cannot close a new toast');
   await first.locator('#edit-name').click();

@@ -26,9 +26,9 @@ async function request(body, scan = async () => scanned) {
   return res;
 }
 const shell = '<!doctype html><html><head><meta name="description" content="x"><title>Luncher</title></head><body></body></html>';
-async function page(id) {
+async function page(id, v) {
   const res = response();
-  await createPageHandler(() => store, async () => shell, () => new Date('2026-10-27T05:00:00Z'))({ method: 'GET', query: { id },
+  await createPageHandler(() => store, async () => shell, () => new Date('2026-10-27T05:00:00Z'))({ method: 'GET', query: { id, v },
     headers: { host: 'luncher.test', 'x-forwarded-proto': 'https' } }, res);
   return res;
 }
@@ -124,6 +124,15 @@ test('shared group page carries escaped OG tags and a versioned QR image', async
   assert.match(withQr.body, /<meta property="og:title" content="Hôm nay ăn [^"]+ · Hội &lt;b&gt;/);
   assert.ok(withQr.body.includes(`<meta property="og:image" content="https://luncher.test/api/qr?id=${id}&amp;v=${qrVersion('https://r.grab.com/g/abc')}">`));
   assert.ok(withQr.body.includes(`<meta property="og:url" content="https://luncher.test/g/${id}">`));
+  const versioned = await page(id, 'copy-123');
+  assert.ok(versioned.body.includes(`<meta property="og:url" content="https://luncher.test/g/${id}?v=copy-123">`));
+  const image = `https://luncher.test/api/qr?id=${id}&amp;v=${qrVersion('https://r.grab.com/g/abc')}-copy-123`;
+  assert.ok(versioned.body.includes(`<meta property="og:image" content="${image}">`));
+  assert.ok(versioned.body.includes(`<meta name="twitter:image" content="${image}">`));
+  assert.notEqual((await page(id, 'copy-456')).body, versioned.body);
+  for (const invalid of ['<script>', 'a&b', 'x'.repeat(81), ['copy-123', 'copy-456']]) {
+    assert.equal((await page(id, invalid)).body, withQr.body, 'invalid versions fall back to the unversioned metadata');
+  }
   assert.equal((await page('nope')).body, shell, 'invalid codes still get the app shell');
   const broken = response();
   await createPageHandler(() => { throw new Error('db down'); }, async () => shell)({ query: { id }, headers: { host: 'x' } }, broken);

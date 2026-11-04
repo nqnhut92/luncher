@@ -37,7 +37,7 @@ export function qrCardPng(text, { width = QR_WIDTH, height = QR_HEIGHT } = {}) {
   return PNG.sync.write(png);
 }
 
-// The version changes with the link so chat apps do not keep showing a stale card.
+// The image version changes with the saved link; chat services may still cache previews.
 export const qrVersion = grabUrl => createHash('sha256').update(grabUrl).digest('hex').slice(0, 10);
 
 const foods = new Map(JSON.parse(readFileSync(new URL('../src/foods.json', import.meta.url), 'utf8')).map(f => [f.id, f]));
@@ -60,17 +60,22 @@ export function previewText(room, today) {
 }
 
 // Link-preview crawlers do not run JavaScript, so group meta tags are rendered on the server.
-export function injectPreview(html, room, origin, today = roomToday()) {
-  const url = `${origin}/g/${room.id}`;
+export function injectPreview(html, room, origin, today = roomToday(), version) {
+  // Only copy a bounded cache token, never arbitrary query parameters, into metadata.
+  const token = typeof version === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(version) ? version : null;
+  const url = `${origin}/g/${room.id}${token ? `?v=${token}` : ''}`;
+  const image = room.grabUrl ? `${origin}/api/qr?id=${room.id}&v=${qrVersion(room.grabUrl)}${token ? `-${token}` : ''}` : null;
   const { title, description } = previewText(room, today);
   const tags = [
     ['property', 'og:type', 'website'], ['property', 'og:url', url],
     ['property', 'og:title', title], ['property', 'og:description', description],
     ...(room.grabUrl ? [
-      ['property', 'og:image', `${origin}/api/qr?id=${room.id}&v=${qrVersion(room.grabUrl)}`],
+      ['property', 'og:image', image],
       ['property', 'og:image:type', 'image/png'], ['property', 'og:image:width', String(QR_WIDTH)],
       ['property', 'og:image:height', String(QR_HEIGHT)], ['property', 'og:image:alt', `Mã QR đơn nhóm Grab của ${room.name}`],
       ['name', 'twitter:card', 'summary_large_image'],
+      ['name', 'twitter:title', title], ['name', 'twitter:description', description],
+      ['name', 'twitter:image', image],
     ] : []),
   ].map(([key, name, content]) => `<meta ${key}="${name}" content="${escapeHtml(content)}">`).join('');
   return html
@@ -86,7 +91,7 @@ export function createPageHandler(getStore, loadHtml, clock = () => new Date()) 
     let html = await loadHtml(req);
     try {
       const room = typeof id === 'string' && isRoomCode(id) ? await (await getStore()).get(id) : null;
-      if (room) html = injectPreview(html, room, requestOrigin(req), roomToday(clock()));
+      if (room) html = injectPreview(html, room, requestOrigin(req), roomToday(clock()), req.query?.v);
     } catch {
       // A missing preview must never stop the group page from opening.
     }

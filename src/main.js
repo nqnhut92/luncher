@@ -225,7 +225,10 @@ async function saveGrab(value) {
   finally{busy=false;render();if(!editingGrab)document.querySelector('#edit-grab')?.focus({preventScroll:true});}
 }
 async function copyGroup() {
- try {await navigator.clipboard.writeText(location.origin+'/g/'+groupId);showToast('Đã copy link nhóm. Gửi vào chat rồi ghim lại nhé!','success');}
+ try {
+  const url = new URL('/g/'+groupId, location.origin);
+  url.searchParams.set('v', crypto.randomUUID());
+  await navigator.clipboard.writeText(url.href);showToast('Đã copy link nhóm. Gửi vào chat rồi ghim lại nhé!','success');}
  catch {showToast('Copy link từ thanh địa chỉ để gửi cho nhóm nhé.');}
 }
 render();

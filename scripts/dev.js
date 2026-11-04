@@ -15,7 +15,7 @@ export async function startDevServer(apiHandler = handler, port = 5173, getStore
     req.query = Object.fromEntries(url.searchParams);
     const group = url.pathname.match(/^\/g\/([^/]+)$/);
     if (group) {
-      req.query = { id: group[1] };
+      req.query = { ...req.query, id: group[1] };
       return pageHandler(req, res).catch(() => { if (!res.writableEnded) { res.statusCode = 500; res.end(); } });
     }
     // Mirrors the vercel.json rewrite for the drink picker page.
