@@ -192,3 +192,5 @@ Mã nguồn, tài liệu và hình minh họa món ăn của Luncher được ph
 ## Tùy chọn giao diện
 
 Nút giao diện chuyển lần lượt **Theo hệ thống → Sáng → Tối → Theo hệ thống**; biểu tượng thể hiện lựa chọn hiện tại. Chế độ Theo hệ thống cập nhật ngay khi thiết bị đổi giao diện; lựa chọn Sáng hoặc Tối được giữ cố định. Lựa chọn được lưu khi tải lại và đồng bộ giữa các tab. Khi trình duyệt chặn lưu trữ, cả ba chế độ vẫn hoạt động trong tab hiện tại.
+
+Vùng nội dung cuộn giữ thao tác native bằng chuột, cảm ứng, bàn phím và kéo thanh cuộn; thanh cuộn mảnh theo giao diện, rãnh trong suốt. Hệ điều hành quyết định tự ẩn; chế độ tương phản cao khôi phục kiểu native.

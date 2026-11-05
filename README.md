@@ -192,3 +192,5 @@ Luncher's code, documentation and food illustrations are released under the [MIT
 ## Appearance preferences
 
 The theme button cycles **System → Light → Dark → System**. Its icon shows the current preference. System follows operating-system changes immediately; an explicit Light or Dark choice stays fixed. Preferences persist across reloads and sync between tabs. If browser storage is unavailable, the current tab still supports all three modes.
+
+Scrollable content keeps native wheel, touch, keyboard and thumb behavior, with thin theme-aware scrollbars and transparent tracks. The OS controls auto-hiding; forced-colors mode restores native styling.
