@@ -26,6 +26,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 - **Xử lý thao tác đồng thời:** lượt chốt từ dữ liệu cũ không tự ghi đè quyết định mới của nhóm.
 - **Header cố định khi cuộn:** logo, liên kết sang trang kia và nút đổi giao diện luôn hiện ở đầu màn hình trên cả trang ăn trưa và trang đồ uống. Header nổi bo góc dùng nền kính bán trong suốt ở cả sáng/tối; trình duyệt không hỗ trợ blur hoặc thiết bị yêu cầu giảm độ trong suốt dùng nền đặc.
 - **Giao diện linh hoạt:** hỗ trợ điện thoại, ghi nhớ chế độ sáng/tối, giảm chuyển động theo thiết bị và không có âm thanh. Giao diện theo phong cách Liquid Glass: nút dạng viên thuốc, thẻ trong mờ và máy quay bằng kính trên nền màu dịu; phần chứa chữ dùng lớp kính đặc hơn để vẫn đạt độ tương phản WCAG AA. Vùng bấm cao tối thiểu 44px, và các lớp kính chuyển sang nền đặc khi thiết bị bật giảm độ trong suốt.
+- **Biểu tượng ứng dụng và màn hình chính:** hỗ trợ đầy đủ favicon SVG tự thích ứng giao diện sáng/tối, icon PNG/ICO dự phòng, apple-touch-icon cho iOS và Web App Manifest cho cả trang Luncher chính (`/`) lẫn Chiều nay uống gì (`/chieunayuonggi`) khi lưu hoặc thêm vào màn hình chính điện thoại.
 
 ## Cách dùng nhóm ăn chung
 

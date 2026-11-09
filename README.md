@@ -26,6 +26,7 @@ The interface is in Vietnamese and supports light and dark themes.
 - **Concurrent updates:** stale confirmations cannot silently overwrite a newer group decision.
 - **Sticky header:** the logo, page link, and theme switch stay visible while scrolling on both the lunch and drink pages. The floating, rounded header uses a translucent glass surface in both themes, with an opaque fallback when backdrop filters are unavailable or reduced transparency is requested.
 - **Responsive design:** mobile layouts, persistent theme preferences, reduced-motion support, and no audio. The interface uses a Liquid Glass style: capsule controls, translucent cards, and a glass slot reel over a soft color backdrop, with denser glass behind text so it keeps WCAG AA contrast. Buttons have touch targets of at least 44px, and surfaces become opaque when the device asks for reduced transparency.
+- **App icons and mobile home screen:** dedicated light/dark responsive SVG favicons, fallback PNG/ICO icons, apple-touch-icon, and Web App Manifests for both the main Luncher app (`/`) and the afternoon drink picker (`/chieunayuonggi`) when saved or added to mobile home screens.
 
 ## How shared groups work
 
