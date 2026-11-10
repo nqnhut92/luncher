@@ -22,6 +22,7 @@ The interface is in Vietnamese and supports light and dark themes.
 - **Weekly variety:** confirmed dishes are excluded for the rest of the week unless repeats are explicitly enabled.
 - **Change journal:** confirmations and replacements retain a timestamped record of the previous and new dishes.
 - **Grab group order:** paste a Grab group-order link (`https://…grab.com/…`) into the group. Luncher reads the share details Grab publishes for that link: a title and a share image showing the store name, address, and rating. The group page shows them with a QR code. Sharing the `/g/<code>` link supplies a QR image for chat previews (Open Graph); display depends on the chat client.
+- **Installable group PWA and Web Share Target:** install a group page (`/g/<code>`) directly as a standalone Progressive Web App. The installed app is bound to that group and opens its page on launch. On Android (Chrome / Chromium browsers), the installed app registers as a Web Share Target: sharing a Grab group order from Grab's share sheet opens the Luncher group app with the Grab link extracted and pre-filled in the Grab edit form, focusing **Lưu link** so you can review before saving. Luncher never auto-saves shared links.
 - **Link previews at a glance:** the preview title and description of a shared group link name today's confirmed dish and the time it was confirmed, for example "Hôm nay ăn Mì Quảng 🍜 · Lunch crew".
 - **Concurrent updates:** stale confirmations cannot silently overwrite a newer group decision.
 - **Sticky header:** the logo, page link, and theme switch stay visible while scrolling on both the lunch and drink pages. The floating, rounded header uses a translucent glass surface in both themes, with an opaque fallback when backdrop filters are unavailable or reduced transparency is requested.
@@ -31,7 +32,7 @@ The interface is in Vietnamese and supports light and dark themes.
 ## How shared groups work
 
 1. Enter a group name on the home page.
-2. Use **Copy group link** and pin it in your group chat. Each copy adds a fresh `?v=<token>` to `/g/<code>` to help avoid reusing cached chat previews; all versions open the same group.
+2. Use **Copy group link** and pin it in your group chat. Each copy adds a fresh 4-character `?v=<token>` to `/g/<code>` (for example `/g/Ab3xY9?v=k7q2`) to help avoid reusing cached chat previews; all versions open the same group.
 3. Spin privately to explore options. Spinning alone does not change the group's meal.
 4. Confirm a dish to save it for everyone. The wheel locks for the day.
 5. To change it, select **Change today’s meal**. The existing choice remains confirmed until a replacement is saved; cancelling leaves it untouched.
@@ -62,6 +63,26 @@ When a link is saved, the server reads Grab's share details for it, either from 
 The group page shows the share image and a QR code for the saved Grab URL. `/g/<code>` serves the app shell with server-rendered Open Graph metadata. Its title and description name today's confirmed dish, the time it was confirmed, and the Grab title. `/api/qr?id=<code>` produces a 1200×630 PNG with only the QR code, centred, so chat apps that crop the card to a thumbnail still show the code. Grab's share image appears only on the group page, not in the preview card. Chat services may show this as a preview, but can cache earlier previews or choose not to display an image. Changing the Grab link changes the image version URL. **Copy group link** also adds a fresh version to the shared URL, `og:url`, and QR image URL, with matching Twitter image metadata. This helps avoid cached previews but cannot force a chat service to show the QR or refresh an already shared message. Teams desktop preview display must be checked after deployment; local tests only verify metadata and image responses.
 
 The saved link is not reset automatically each day. Replace or clear it when an order ends. Luncher does not create Grab orders, track expiry, or collect individual orders. Sharing the group link also makes its saved Grab URL and share image available to recipients and link-preview services. Luncher does not track Grab's order status. The saved share details reflect the time the link was saved, and the preview text reflects the dish confirmed when a chat service fetched the preview.
+
+### Installable group app and Grab share target
+
+A shared group page (`/g/<code>`) provides a per-group Web App Manifest at `/api/manifest?id=<code>` and can be installed via your browser's install menu ("Install Luncher" or "Add to Home Screen"). The home page and the afternoon drinks page can still be added to the home screen with their own static manifests, but only an installed group app opens straight into its group and appears in the share sheet.
+
+The installed app uses a minimal, network-only service worker (`/sw.js`): no HTML or group API responses are cached, ensuring daily decisions and meal history always stay live.
+
+On Android (Chrome and Chromium-based browsers), an installed group app registers as a Web Share Target:
+
+1. Tap **Share** on an active group order in the Grab app.
+2. Select your installed Luncher group app from Android's share sheet.
+3. Luncher extracts the Grab link from the shared text or URL, immediately removes the share query parameters from the address bar, pre-fills the Grab order form, and focuses the **Lưu link** button.
+4. If the group already has a saved Grab link, a notification alerts you that saving will replace it. If no valid Grab link is detected in the shared content, an error notification is displayed and the form remains closed.
+5. The link is saved only when you click **Lưu link**; Luncher never auto-saves shared content.
+
+**Platform limitations:**
+- **Web Share Target is Android-only:** Web Share Target requires an installed Progressive Web App on Android using Chrome or Chromium-based browsers. Safari on iOS and iPadOS ("Add to Home Screen") does not support Web Share Targets; on Apple devices, users continue to paste Grab links manually into the group.
+- **Desktop Chrome:** Desktop Chrome allows installing the group PWA, but Grab's group-order share sheet is available only on mobile devices.
+- **Per-group apps:** Each group installs as its own independent app on your home screen (one icon per group code). Android's share sheet lists each installed group separately.
+- **Shared content format:** Whether the Grab app sends the order link inside `text` or `url` depends on Grab and Android; Luncher inspects both and extracts the first valid Grab link.
 
 ## Web Analytics
 

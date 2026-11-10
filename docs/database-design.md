@@ -189,11 +189,49 @@ The whole read has a 4-second limit. If it fails, the details are stored as `NUL
 
 ### Group page and QR preview
 
-Vercel rewrites `/g/:id` to `/api/group-page?id=:id`. The handler reads the shared store and injects escaped group metadata into the built SPA shell. The title and description name today's confirmed dish (Asia/Ho_Chi_Minh), the time of its latest confirm or replace event, and the scanned Grab title. A saved Grab link adds an Open Graph image URL at `/api/qr?id=<code>&v=<hash>`. Missing groups or database lookup failures fall back to the unmodified app shell; the client still loads group data through `/api/rooms`. HTML responses are private and not cached. Each **Copy group link** action generates a fresh UUID in `?v=<token>`; the group identity and stored data stay unchanged. The page preserves a valid `v` in `og:url` and appends it to the Grab URL hash in both `og:image` and `twitter:image`. Tokens must contain 1–80 ASCII letters, digits, underscores or hyphens; invalid values (including arrays from repeated parameters) are ignored. The local server preserves query parameters for the group page. Other query parameters are not reflected in metadata.
+Vercel rewrites `/g/:id` to `/api/group-page?id=:id`. The handler reads the shared store and injects escaped group metadata into the built SPA shell. The title and description name today's confirmed dish (Asia/Ho_Chi_Minh), the time of its latest confirm or replace event, and the scanned Grab title. A saved Grab link adds an Open Graph image URL at `/api/qr?id=<code>&v=<hash>`. Missing groups or database lookup failures fall back to the unmodified app shell; the client still loads group data through `/api/rooms`. HTML responses are private and not cached. Each **Copy group link** action generates a fresh 4-character lowercase base-36 token in `?v=<token>` (for example `?v=k7q2`); the group identity and stored data stay unchanged. The page preserves a valid `v` in `og:url` and appends it to the Grab URL hash in both `og:image` and `twitter:image`. Tokens must contain 1–80 ASCII letters, digits, underscores or hyphens; invalid values (including arrays from repeated parameters) are ignored. The local server preserves query parameters for the group page. Other query parameters are not reflected in metadata.
 
 The QR endpoint accepts `GET` and `HEAD`, returning a 1200×630 PNG with only a centred QR code encoding the saved Grab URL. It never fetches or draws `grab_image`: chat apps crop wide cards to a centred thumbnail, and art beside the code pushed the QR out of view. `layout=square` returns a 480×480 QR code; the in-app Grab card uses it. It returns `400` for invalid codes, `404` for absent groups/links, `405` for unsupported methods, and `503` for lookup/render failures. Successful images use `Cache-Control: public, max-age=300`; failures use `no-store`. The version is the first ten SHA-256 hex characters of the Grab URL. It changes the image URL when the link changes, but is not an immutable historical image or access token: the endpoint always renders the current saved link. For copied links, the image version also includes the validated copy token. Chat services may retain their own cached previews or omit the image; Teams desktop rendering requires a deployed-client check.
 
 Anyone with the group code, including preview crawlers, can retrieve its saved Grab URL or QR. No additional authentication or new table is introduced.
+
+### Group PWA manifest and share target
+
+`GET /api/manifest?id=<code>` produces a Web App Manifest for installing `/g/<code>` as a group-bound standalone PWA:
+
+```json
+{
+  "id": "/g/Ab3xY9",
+  "start_url": "/g/Ab3xY9",
+  "scope": "/",
+  "display": "standalone",
+  "name": "Luncher · Lunch crew",
+  "short_name": "Lunch crew",
+  "lang": "vi",
+  "theme_color": "#faf7f2",
+  "background_color": "#f6f1ea",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "share_target": {
+    "action": "/g/Ab3xY9",
+    "method": "GET",
+    "params": {
+      "title": "share_title",
+      "text": "share_text",
+      "url": "share_url"
+    }
+  }
+}
+```
+
+The endpoint validates `id` with `isRoomCode` (`404` if invalid) and looks up the room name through the existing database store. If lookup fails or the database is unavailable, it falls back to a generic name (`Luncher`) rather than erroring, keeping the manifest functional. Responses use `Content-Type: application/manifest+json; charset=utf-8` and `Cache-Control: public, max-age=300`.
+
+For valid existing groups, the group page shell (`/g/<code>`) replaces the static `<link rel="manifest" href="/manifest.webmanifest">` with `<link rel="manifest" href="/api/manifest?id=<code>">`, because browsers only use the first manifest link. It reuses the shell's app icons and apple-touch-icon. Missing groups or lookup failures keep the static manifest (`start_url: "/"`, no share target). The home page and afternoon drinks page keep their static manifests, which have no share target.
+
+The client registers a minimal, network-only service worker (`public/sw.js`) scoped to `/`, with no caching of HTML or group API endpoints. On Android, the installed PWA handles Grab order shares via the manifest's `share_target`, extracting the first valid Grab URL (`https://...` with Grab host rules) and pre-filling the Grab edit form for confirmation. No schema modification is required.
 
 ### Conflicts and failures
 
@@ -254,10 +292,15 @@ Only successful visits create entries. Revisiting deduplicates and moves the gro
 | [`api/rooms.js`](../api/rooms.js) | Vercel group-data handler |
 | [`server/neon.js`](../server/neon.js) | Shared server-only Neon store |
 | [`server/grab.js`](../server/grab.js) | Grab URL normalization, validation, and share-detail scanning |
+| [`server/manifest.js`](../server/manifest.js) | Dynamic Web App Manifest JSON builder and request handler |
+| [`api/manifest.js`](../api/manifest.js) | Vercel manifest handler |
+| [`src/share-target.js`](../src/share-target.js) | Pure Grab URL validator and share target token extractor |
+| [`public/sw.js`](../public/sw.js) | Minimal network-only service worker for group PWA installability |
 | [`server/preview.js`](../server/preview.js) | Escaped preview metadata, QR PNG rendering, and response caching |
 | [`api/group-page.js`](../api/group-page.js) | Built app-shell loading and group preview handler |
 | [`api/qr.js`](../api/qr.js) | Group QR image handler |
 | [`tests/grab.test.js`](../tests/grab.test.js) | Grab validation, scanning and redirect limits, revision checks, preview text and fallback, and QR card tests |
+| [`tests/manifest.test.js`](../tests/manifest.test.js) | Manifest generation, handler responses, and Grab URL extraction tests |
 | [`tests/rooms.test.js`](../tests/rooms.test.js) | Schema, migration, API, concurrency, and history tests |
 
 The schema currently has no automatic retention policy or public deletion endpoint. Any future food catalog or membership feature should introduce an explicit migration and update this document.

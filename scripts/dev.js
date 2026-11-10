@@ -4,10 +4,11 @@ import { readFile } from 'node:fs/promises';
 import handler from '../api/rooms.js';
 import qrHandler from '../api/qr.js';
 import { createPageHandler } from '../server/preview.js';
+import { createManifestHandler } from '../server/manifest.js';
 import { neonStore } from '../server/neon.js';
 
 // Same-origin local API + Vite; Vercel runs api/rooms.js itself in production.
-export async function startDevServer(apiHandler = handler, port = 5173, getStore = neonStore, imageHandler = qrHandler) {
+export async function startDevServer(apiHandler = handler, port = 5173, getStore = neonStore, imageHandler = qrHandler, manifestHandler = createManifestHandler(getStore)) {
   const root = new URL('../index.html', import.meta.url);
   let vite, pageHandler;
   const server = createHttpServer(async (req, res) => {
@@ -21,6 +22,7 @@ export async function startDevServer(apiHandler = handler, port = 5173, getStore
     // Mirrors the vercel.json rewrite for the drink picker page.
     if (url.pathname === '/chieunayuonggi') req.url = '/chieunayuonggi/' + url.search;
     if (url.pathname === '/api/qr') return imageHandler(req, res);
+    if (url.pathname === '/api/manifest') return manifestHandler(req, res);
     if (url.pathname !== '/api/rooms') return vite.middlewares(req, res);
     res.status = code => { res.statusCode = code; return res; };
     res.json = data => { res.setHeader('Content-Type', 'application/json'); res.end(JSON.stringify(data)); };

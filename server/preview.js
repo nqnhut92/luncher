@@ -78,7 +78,13 @@ export function injectPreview(html, room, origin, today = roomToday(), version) 
       ['name', 'twitter:image', image],
     ] : []),
   ].map(([key, name, content]) => `<meta ${key}="${name}" content="${escapeHtml(content)}">`).join('');
-  return html
+  // Browsers use only the first manifest link, so the shell's static app manifest is swapped for the
+  // group-bound one (start_url and share target point at this group).
+  const manifest = `<link rel="manifest" href="/api/manifest?id=${encodeURIComponent(room.id)}">`;
+  const withManifest = /<link rel="manifest"[^>]*>/.test(html)
+    ? html.replace(/<link rel="manifest"[^>]*>/, manifest)
+    : html.replace('</head>', `${manifest}</head>`);
+  return withManifest
     .replace(/<meta name="description"[^>]*>/, `<meta name="description" content="${escapeHtml(description)}">`)
     .replace(/<title>[^<]*<\/title>/, `<title>${escapeHtml(title)}</title>`)
     .replace('</head>', `${tags}</head>`);

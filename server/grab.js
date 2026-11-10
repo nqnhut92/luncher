@@ -1,18 +1,9 @@
-// Only Grab's own https hosts; the link ends up in a QR code that members scan.
-const grabHost = host => host === 'grab.com' || host.endsWith('.grab.com') || host === 'grab.onelink.me';
+import { isGrabHost, normalizeGrabUrl } from '../src/share-target.js';
 
-// Returns the canonical link, null to clear it, or false when the input is invalid.
-export function normalizeGrabUrl(value) {
-  if (typeof value !== 'string') return false;
-  const text = value.trim();
-  if (!text) return null;
-  if (text.length > 500) return false;
-  try {
-    const url = new URL(text);
-    if (url.protocol !== 'https:' || url.username || url.password || !grabHost(url.hostname)) return false;
-    return url.href.length <= 500 ? url.href : false;
-  } catch { return false; }
-}
+export { normalizeGrabUrl };
+
+// Only Grab's own https hosts; the link ends up in a QR code that members scan.
+const grabHost = isGrabHost;
 
 // Preview art is hotlinked from Grab, so only Grab's https hosts are accepted.
 export function grabImageUrl(value) {

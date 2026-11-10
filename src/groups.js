@@ -15,3 +15,10 @@ export async function roomRequest(options = {}) {
 export const escapeHtml = value => String(value).replace(/[&<>"']/g, c => ({
   '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
 })[c]);
+
+// Short cache-busting token for copied group links: it only nudges chat apps to fetch a fresh preview,
+// so 4 lowercase base-36 characters (~1.7M values) are enough and keep the shared link short.
+export function linkVersion(length = 4, random = crypto.getRandomValues.bind(crypto)) {
+  const bytes = random(new Uint8Array(length));
+  return Array.from(bytes, byte => (byte % 36).toString(36)).join('');
+}

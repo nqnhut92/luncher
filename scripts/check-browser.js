@@ -135,6 +135,34 @@ try {
   assert.match(preview, /<meta property="og:image" content="http:\/\/127\.0\.0\.1:\d+\/api\/qr\?id=/);
   assert.match(preview, /<meta property="og:title" content="Hôm nay ăn [^"]+ · Hội ăn trưa mới">/);
   assert.match(preview, /Đơn nhóm thử: quét mã QR để thêm món\./);
+  assert.match(preview, new RegExp(`<link rel="manifest" href="/api/manifest\\?id=${code}">`));
+  assert.equal(preview.match(/<link rel="manifest"/g).length, 1);
+  assert.ok(!preview.includes('/manifest.webmanifest'));
+  const manifestData = await (await fetch(`${origin}/api/manifest?id=${code}`)).json();
+  assert.equal(manifestData.id, `/g/${code}`);
+  assert.equal(manifestData.start_url, `/g/${code}`);
+  assert.equal(manifestData.name, 'Luncher · Hội ăn trưa mới');
+  assert.deepEqual(manifestData.share_target, {
+    action: `/g/${code}`,
+    method: 'GET',
+    params: { title: 'share_title', text: 'share_text', url: 'share_url' },
+  });
+  // Web Share Target: opening /g/<code>?share_text=<sample> pre-fills Grab form and cleans URL
+  const shareSample = 'Join the Group Order from Cơm Gà Xối Mỡ 142 - Lê Văn Duyệt! Add your favourites and enjoy a feast together! https://app.grab.com/s/qn4WHlnn';
+  const shareTargetCode = await store.create('Nhóm chia sẻ');
+  const shareContext = await browser.newContext({ reducedMotion: 'reduce' });
+  const sharePage = await shareContext.newPage();
+  sharePage.on('pageerror', error => errors.push(error.message));
+  await sharePage.goto(`${origin}/g/${shareTargetCode}?share_text=${encodeURIComponent(shareSample)}`);
+  await sharePage.locator('#grab-form').waitFor();
+  assert.equal(await sharePage.locator('#grab-url').inputValue(), 'https://app.grab.com/s/qn4WHlnn');
+  assert.equal(await sharePage.evaluate(() => document.activeElement === document.querySelector('#grab-form .small-primary')), true, 'Lưu link submit button is focused');
+  assert.equal(sharePage.url(), `${origin}/g/${shareTargetCode}`, 'share params are stripped immediately');
+  assert.equal((await store.get(shareTargetCode)).grabUrl, null, 'nothing saved until clicking Lưu link');
+  await sharePage.locator('#grab-form .small-primary').click();
+  await sharePage.locator('.grab-qr').waitFor();
+  assert.equal((await store.get(shareTargetCode)).grabUrl, 'https://app.grab.com/s/qn4WHlnn');
+  await shareContext.close();
   assert.equal(second.url(), roomUrl);
   assert.equal(await second.locator('.result h2').innerText(), replacement);
   const headings = await second.locator('.side-card .eyebrow').allTextContents();
@@ -149,7 +177,7 @@ try {
   assert.equal((await first.locator('.workspace').boundingBox()).y, beforeToast.y);
   const copied = new URL(await first.evaluate(() => window.copiedLinks.at(-1)));
   assert.equal(copied.origin + copied.pathname, roomUrl);
-  assert.ok(copied.searchParams.get('v'));
+  assert.match(copied.searchParams.get('v'), /^[0-9a-z]{4}$/);
   const copiedPreview = await (await fetch(copied)).text();
   assert.ok(copiedPreview.includes(`<meta property="og:url" content="${copied.href}">`));
   assert.equal(copiedPreview.includes('id="app"'), true);
@@ -365,7 +393,7 @@ try {
   await second.goto(roomUrl); await second.locator('.toast').waitFor();
   assert.equal(await second.locator('#spin').isDisabled(), true);
   assert.deepEqual(errors, []);
-  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, locked choices, cancellable replacement, persistent change journal, next-day unlock, refresh, reload persistence, mobile, theme, stable sidebar/wheel geometry at desktop/tablet/mobile in both themes, DOM/scroll/focus preservation, real spin continuity, toast expiry/replacement/dismissal without layout or focus changes, browser-private recent groups, renamed labels, forget/revisit, bounded 10-group layouts, the storage-free afternoon drink picker, and failed/offline room handling.');
+  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, locked choices, cancellable replacement, persistent change journal, next-day unlock, refresh, reload persistence, mobile, theme, stable sidebar/wheel geometry at desktop/tablet/mobile in both themes, DOM/scroll/focus preservation, real spin continuity, toast expiry/replacement/dismissal without layout or focus changes, browser-private recent groups, renamed labels, forget/revisit, bounded 10-group layouts, the storage-free afternoon drink picker, installable group PWA manifest, Web Share Target pre-fill, and failed/offline room handling.');
 } finally {
   await browser?.close();
   await app.close();

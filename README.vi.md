@@ -22,6 +22,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 - **Tránh lặp trong tuần:** món đã chốt được loại khỏi các lần quay tiếp trong tuần, trừ khi bật tùy chọn cho phép lặp.
 - **Nhật ký thay đổi:** giữ lại từng lần chốt và đổi món, gồm thời gian, món cũ và món mới.
 - **Đơn nhóm Grab:** dán link đơn nhóm Grab (`https://…grab.com/…`) vào nhóm. Luncher đọc thông tin chia sẻ mà Grab công bố cho link đó: tiêu đề và ảnh có tên quán, địa chỉ, số sao. Trang nhóm hiện các thông tin này kèm mã QR. Khi chia sẻ link `/g/<code>` vào Zalo/Messenger/Slack/Teams, trang cung cấp mã QR cho ảnh preview (Open Graph); việc hiển thị phụ thuộc ứng dụng chat.
+- **Cài đặt app nhóm (PWA) và nhận link Grab qua chia sẻ:** cài trang nhóm (`/g/<code>`) trực tiếp thành ứng dụng Progressive Web App độc lập. App gắn cố định với nhóm đó và mở thẳng `/g/<code>` khi khởi chạy. Trên Android (Chrome / Chromium), app nhóm đã cài tự đăng ký nhận nội dung chia sẻ (Web Share Target): khi bấm "Chia sẻ" trên đơn nhóm của ứng dụng Grab, Luncher xuất hiện trong bảng chia sẻ. Khi mở, app tự trích xuất link Grab, điền sẵn vào ô nhập và focus nút **Lưu link** để bạn kiểm tra trước khi lưu. Luncher không bao giờ tự động lưu link được chia sẻ.
 - **Xem nhanh món hôm nay:** tiêu đề và mô tả preview của link nhóm ghi rõ món đã chốt hôm nay và giờ chốt, ví dụ "Hôm nay ăn Mì Quảng 🍜 · Hội ăn trưa".
 - **Xử lý thao tác đồng thời:** lượt chốt từ dữ liệu cũ không tự ghi đè quyết định mới của nhóm.
 - **Header cố định khi cuộn:** logo, liên kết sang trang kia và nút đổi giao diện luôn hiện ở đầu màn hình trên cả trang ăn trưa và trang đồ uống. Header nổi bo góc dùng nền kính bán trong suốt ở cả sáng/tối; trình duyệt không hỗ trợ blur hoặc thiết bị yêu cầu giảm độ trong suốt dùng nền đặc.
@@ -31,7 +32,7 @@ Giao diện sử dụng tiếng Việt, hỗ trợ chế độ sáng và tối.
 ## Cách dùng nhóm ăn chung
 
 1. Nhập tên nhóm ở trang chính.
-2. Bấm **Copy link nhóm** rồi ghim trong nhóm chat. Mỗi lần copy tự thêm `?v=<token>` mới vào `/g/<code>` để giảm việc dùng lại preview cũ; mọi phiên bản vẫn mở cùng nhóm.
+2. Bấm **Copy link nhóm** rồi ghim trong nhóm chat. Mỗi lần copy tự thêm `?v=<token>` mới gồm 4 ký tự vào `/g/<code>` (ví dụ `/g/Ab3xY9?v=k7q2`) để giảm việc dùng lại preview cũ; mọi phiên bản vẫn mở cùng nhóm.
 3. Quay thử để tìm món phù hợp. Việc quay diễn ra riêng trên từng máy, chưa thay đổi món của nhóm.
 4. Chốt món để lưu cho cả nhóm. Vòng quay được khóa cho ngày đó.
 5. Muốn đổi, bấm **Đổi món hôm nay**. Món cũ vẫn được giữ cho tới khi chốt món mới; hủy đổi không thay đổi thực đơn.
@@ -62,6 +63,26 @@ Khi lưu link, server đọc thông tin chia sẻ của Grab, từ link chuyển
 Trang nhóm hiện ảnh chia sẻ và mã QR dẫn tới link Grab đã lưu. `/g/<code>` trả giao diện cùng metadata Open Graph được tạo trên server. Tiêu đề và mô tả ghi món đã chốt hôm nay, giờ chốt và tiêu đề từ Grab. `/api/qr?id=<code>` tạo ảnh PNG 1200×630 chỉ có mã QR ở giữa, để ứng dụng chat cắt ảnh thành thumbnail vẫn thấy mã. Ảnh chia sẻ của Grab chỉ hiện trên trang nhóm, không có trong ảnh preview. Ứng dụng chat có thể dùng ảnh này làm preview, nhưng cũng có thể giữ ảnh cũ trong cache hoặc không hiển thị ảnh. Đổi link Grab sẽ đổi URL phiên bản ảnh. Nút **Copy link nhóm** còn thêm phiên bản mới vào link chia sẻ, `og:url` và URL ảnh QR, kèm metadata ảnh Twitter tương ứng. Cách này giúp tránh preview cũ nhưng không ép ứng dụng chat hiện QR hay làm mới tin nhắn đã gửi. Cần kiểm tra preview trên Teams desktop sau khi deploy; kiểm thử local chỉ xác minh metadata và phản hồi ảnh.
 
 Link đã lưu không tự đặt lại mỗi ngày. Hãy thay hoặc xóa khi đơn kết thúc. Luncher không tạo đơn Grab, kiểm tra hạn đơn hoặc gom đơn từng người. Chia sẻ link nhóm cũng cho người nhận và dịch vụ tạo preview khả năng truy cập link Grab và ảnh chia sẻ đã lưu. Luncher không theo dõi trạng thái đơn Grab. Thông tin chia sẻ được lấy lúc lưu link, còn nội dung preview phản ánh món đã chốt tại thời điểm ứng dụng chat tải preview.
+
+### Cài app nhóm và nhận link Grab qua chia sẻ
+
+Trang nhóm (`/g/<code>`) cung cấp Web App Manifest riêng cho từng nhóm tại `/api/manifest?id=<code>` và có thể cài đặt thông qua menu của trình duyệt ("Cài đặt ứng dụng" hoặc "Thêm vào Màn hình chính"). Trang chủ và trang đồ uống buổi chiều vẫn thêm được vào màn hình chính bằng manifest tĩnh riêng, nhưng chỉ app cài từ trang nhóm mới mở thẳng vào nhóm và xuất hiện trong bảng chia sẻ.
+
+App đã cài dùng service worker tối giản, chỉ chạy network (`/sw.js`): không cache HTML hay phản hồi API nhóm, đảm bảo món ăn và lịch sử nhóm luôn được lấy trực tiếp từ server.
+
+Trên Android (Chrome và các trình duyệt Chromium), app nhóm đã cài tự đăng ký làm Web Share Target:
+
+1. Bấm **Chia sẻ** trên đơn nhóm đang mở trong app Grab.
+2. Chọn app nhóm Luncher tương ứng từ bảng chia sẻ của Android.
+3. Luncher tự trích xuất link Grab từ văn bản hoặc URL được chia sẻ, xóa ngay các tham số chia sẻ trên thanh địa chỉ, điền link vào form đơn Grab và chuyển con trỏ (focus) vào nút **Lưu link**.
+4. Nếu nhóm đã có sẵn một link Grab khác, thông báo sẽ nhắc bạn rằng việc lưu sẽ thay thế link cũ. Nếu không tìm thấy link Grab hợp lệ trong nội dung chia sẻ, app hiển thị thông báo lỗi và không mở form.
+5. Link chỉ được lưu khi bạn bấm **Lưu link**; Luncher không bao giờ tự động lưu dữ liệu chia sẻ.
+
+**Giới hạn nền tảng:**
+- **Web Share Target chỉ hoạt động trên Android:** tính năng nhận chia sẻ đòi hỏi PWA đã cài trên Android bằng Chrome hoặc trình duyệt nhân Chromium. Safari trên iOS/iPadOS ("Thêm vào Màn hình chính") chưa hỗ trợ Web Share Target; trên thiết bị Apple, bạn vẫn dán link Grab thủ công vào nhóm.
+- **Chrome trên máy tính:** máy tính hỗ trợ cài PWA của nhóm, nhưng tính năng chia sẻ đơn nhóm của app Grab chỉ có trên điện thoại.
+- **Mỗi nhóm là một app độc lập:** mỗi nhóm được cài thành một app riêng trên màn hình chính (mỗi mã nhóm một icon). Bảng chia sẻ của Android sẽ liệt kê riêng từng nhóm bạn đã cài.
+- **Định dạng dữ liệu chia sẻ:** việc app Grab gửi link trong trường `text` hay `url` do Grab và hệ điều hành quyết định; Luncher đọc cả hai trường và lấy link Grab hợp lệ đầu tiên.
 
 ## Web Analytics
 

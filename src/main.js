@@ -9,16 +9,41 @@ import foods from './foods.json';
 import {dateKey,weekStart,availableFoods,readState} from './logic.js';
 import {readPersonal, confirmPersonal} from './activity.js';
 import {RECENT_GROUPS_KEY, readRecentGroups, rememberGroup, updateRememberedGroup} from './recent-groups.js';
-import {roomRequest, escapeHtml} from './groups.js';
+import {roomRequest, escapeHtml, linkVersion} from './groups.js';
 import {icon} from './icons.js';
 import {createSpinBag} from './spin-bag.js';
 import {leverSvg, reelSequence, runReel} from './slot.js';
+import {extractGrabUrl} from './share-target.js';
 initializeAnalytics();
 const app = document.querySelector('#app');
 const scrollRegions = createScrollRegions({root: app});
 app.addEventListener('toggle', () => scrollRegions.refresh(), true);
 const themeController = createThemeController({storageKey:'luncher-theme', colors:{light:'#faf7f2',dark:'#161a18'}, onChange:state=>paintThemeButton(document.querySelector('#theme'),state,'vi')});
 let groupId = location.pathname.startsWith('/g/') ? location.pathname.split('/')[2] || 'invalid' : null;
+let pendingShare = null;
+if (groupId) {
+  const searchParams = new URLSearchParams(location.search);
+  if (searchParams.has('share_title') || searchParams.has('share_text') || searchParams.has('share_url')) {
+    pendingShare = {
+      link: extractGrabUrl({
+        title: searchParams.get('share_title'),
+        text: searchParams.get('share_text'),
+        url: searchParams.get('share_url'),
+      }),
+      received: true,
+    };
+    searchParams.delete('share_title');
+    searchParams.delete('share_text');
+    searchParams.delete('share_url');
+    const cleanSearch = searchParams.toString();
+    const cleanUrl = location.pathname + (cleanSearch ? '?' + cleanSearch : '') + location.hash;
+    window.history.replaceState(null, '', cleanUrl);
+  }
+  const isLocalhost = location.hostname === 'localhost';
+  if ('serviceWorker' in navigator && (import.meta.env?.PROD || location.protocol === 'https:' || isLocalhost)) {
+    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(() => {});
+  }
+}
 let group = null, groupToday = null, loading = Boolean(groupId), busy = false, refreshing = false, editingName = false, nameDraft = '';
 let changingMeal = false, activityOpen = false, events = [], editingGrab = false, grabDraft = '';
 let recentGroups=[], recordedVisit=false, recentStorageFailed=false, menuOpen=false, celebrate=false;
@@ -164,9 +189,29 @@ function connectionError(error) {
 async function refreshGroup() {
  if(!groupId||spinning||busy||refreshing)return;
  refreshing=true; loading=true;  render();
- try { applyGroup(await roomRequest({id:groupId})); }
+ let loaded=false;
+ try { applyGroup(await roomRequest({id:groupId})); loaded=true; }
  catch(error) { showToast(connectionError(error),'error'); }
- finally { refreshing=false; loading=false; render(); }
+ finally {
+  refreshing=false; loading=false; render();
+  if(loaded&&pendingShare){
+   const share=pendingShare;
+   pendingShare=null;
+   if(share.link){
+    editingGrab=true;
+    grabDraft=share.link;
+    render();
+    document.querySelector('#grab-form .small-primary')?.focus({preventScroll:true});
+    if(group.grabUrl){
+     showToast('Nhóm đã có link Grab. Đã dán link mới từ nội dung chia sẻ, nhấn Lưu link để thay thế.');
+    } else {
+     showToast('Đã dán link Grab từ nội dung chia sẻ. Nhấn Lưu link để lưu.');
+    }
+   } else {
+    showToast('Không tìm thấy link đơn nhóm Grab trong nội dung chia sẻ.','error');
+   }
+  }
+ }
 }
 async function createGroup(event) {
  event.preventDefault(); if(busy)return;
@@ -231,7 +276,7 @@ async function saveGrab(value) {
 async function copyGroup() {
  try {
   const url = new URL('/g/'+groupId, location.origin);
-  url.searchParams.set('v', crypto.randomUUID());
+  url.searchParams.set('v', linkVersion());
   await navigator.clipboard.writeText(url.href);showToast('Đã copy link nhóm. Gửi vào chat rồi ghim lại nhé!','success');}
  catch {showToast('Copy link từ thanh địa chỉ để gửi cho nhóm nhé.');}
 }
