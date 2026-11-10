@@ -382,6 +382,42 @@ try {
   assert.deepEqual(drinkApiCalls,[],'the drink picker never calls the group API');
   await drinkPage.locator('a.header-link[href="/"]').click();await drinkPage.waitForURL(origin+'/');
   await drinkContext.close();
+  // Standalone home-screen apps hide the cross-page header link and keep the brand scoped to their own app.
+  const standaloneContext=await browser.newContext({reducedMotion:'reduce',viewport:{width:390,height:844}});
+  await standaloneContext.addInitScript(()=>{
+    const origMatchMedia=window.matchMedia.bind(window);
+    window.matchMedia=query=>query==='(display-mode: standalone)'
+      ? {matches:true,media:query,onchange:null,addEventListener(){},removeEventListener(){},addListener(){},removeListener(){},dispatchEvent(){return false;}}
+      : origMatchMedia(query);
+  });
+  const standalonePage=await standaloneContext.newPage();standalonePage.on('pageerror',error=>errors.push(error.message));
+  await standalonePage.goto(origin);
+  assert.equal(await standalonePage.locator('a.header-link').count(),0,'main home-screen app hides sibling page header link');
+  assert.equal(await standalonePage.locator('a.brand').getAttribute('href'),'/');
+  assert.ok((await standalonePage.locator('.fe-header').boundingBox()).height>=64);
+  await standalonePage.goto(roomUrl);
+  await standalonePage.waitForFunction(()=>document.querySelector('.group-title h2')?.textContent==='Hội ăn trưa mới');
+  assert.equal(await standalonePage.locator('a.header-link').count(),0,'group home-screen app hides sibling page header link');
+  assert.equal(await standalonePage.locator('a.brand').getAttribute('href'),`/g/${code}`);
+  await standalonePage.goto(origin+'/chieunayuonggi');
+  assert.equal(await standalonePage.locator('a.header-link').count(),0,'drinks home-screen app hides sibling page header link');
+  assert.equal(await standalonePage.locator('a.brand').getAttribute('href'),'/chieunayuonggi');
+  await standalonePage.setViewportSize({width:1440,height:900});
+  const standaloneChrome=await standalonePage.locator('.fe-header').evaluate(el=>{
+    const rect=el.getBoundingClientRect(),content=document.querySelector('main').getBoundingClientRect();
+    return {left:rect.left,right:rect.right,contentLeft:content.left,contentRight:content.right,height:rect.height};
+  });
+  assert.ok(standaloneChrome.height>=64&&Math.abs(standaloneChrome.left-standaloneChrome.contentLeft)<1&&Math.abs(standaloneChrome.right-standaloneChrome.contentRight)<1);
+  await standaloneContext.close();
+  const iosStandaloneContext=await browser.newContext({reducedMotion:'reduce',viewport:{width:390,height:844}});
+  await iosStandaloneContext.addInitScript(()=>{Object.defineProperty(window.navigator,'standalone',{value:true,configurable:true});});
+  const iosStandalonePage=await iosStandaloneContext.newPage();iosStandalonePage.on('pageerror',error=>errors.push(error.message));
+  await iosStandalonePage.goto(origin);
+  assert.equal(await iosStandalonePage.locator('a.header-link').count(),0,'iOS standalone home-screen main app hides sibling header link');
+  await iosStandalonePage.goto(origin+'/chieunayuonggi');
+  assert.equal(await iosStandalonePage.locator('a.header-link').count(),0,'iOS standalone home-screen drinks app hides sibling header link');
+  assert.equal(await iosStandalonePage.locator('a.brand').getAttribute('href'),'/chieunayuonggi');
+  await iosStandaloneContext.close();
   // Invalid links must never fall back to editable personal mode.
   await second.goto(origin + '/g/no-such-room'); await second.locator('.toast').waitFor();
   assert.equal(await second.locator('#spin').isDisabled(), true);
@@ -393,7 +429,7 @@ try {
   await second.goto(roomUrl); await second.locator('.toast').waitFor();
   assert.equal(await second.locator('#spin').isDisabled(), true);
   assert.deepEqual(errors, []);
-  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, locked choices, cancellable replacement, persistent change journal, next-day unlock, refresh, reload persistence, mobile, theme, stable sidebar/wheel geometry at desktop/tablet/mobile in both themes, DOM/scroll/focus preservation, real spin continuity, toast expiry/replacement/dismissal without layout or focus changes, browser-private recent groups, renamed labels, forget/revisit, bounded 10-group layouts, the storage-free afternoon drink picker, installable group PWA manifest, Web Share Target pre-fill, and failed/offline room handling.');
+  console.log('PASS: personal mode, short codes, rename/cancel, create/share/deep link, escaped group name, two independent members, conflict, locked choices, cancellable replacement, persistent change journal, next-day unlock, refresh, reload persistence, mobile, theme, stable sidebar/wheel geometry at desktop/tablet/mobile in both themes, DOM/scroll/focus preservation, real spin continuity, toast expiry/replacement/dismissal without layout or focus changes, browser-private recent groups, renamed labels, forget/revisit, bounded 10-group layouts, the storage-free afternoon drink picker, installable group PWA manifest, Web Share Target pre-fill, standalone home-screen header behavior, and failed/offline room handling.');
 } finally {
   await browser?.close();
   await app.close();
