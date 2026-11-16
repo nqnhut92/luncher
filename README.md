@@ -4,215 +4,68 @@
 
 **Less deciding. More lunch.**
 
-Luncher is a lightweight lunch picker for individuals and groups. Spin the wheel, confirm a dish, and keep the week's meals varied without accounts or room administrators.
+Luncher is a lightweight lunch and afternoon drink picker for individuals and shared groups—spin the reel, confirm a dish, and keep the week's meals varied without accounts or room admins.
 
 [Open Luncher](https://truanayangi.congtynhu.cc/)
 
-The interface is in Vietnamese and supports light and dark themes.
+The interface is in Vietnamese and supports System, Light, and Dark themes.
 
 ## Features
 
-- **Vertical food reel:** a slot-machine picker shows three rows with horizontal names and matching food illustrations. Use the spin button or side lever (also keyboard accessible). It slows down onto the selected dish; reduced-motion mode skips the animation. Filters cover rice and noodles. Food pictures stay left while names are centered in the remaining space; Bún chả / Bún thịt nướng uses two fixed lines. The cabinet has a recessed brass-trimmed reel, an integrated base button, and a separate side lever with a visible axle; clicking the lever animates its arm within the side gutter before the reel settles. The arm returns upright and stays upright while hovered or after a tap.
-- **Personal mode:** keep meal history in the current browser using `localStorage`.
-- **Afternoon drinks (`/chieunayuonggi`):** a separate, personal-only reel answers "Chiều nay uống gì?" (what to drink this afternoon?) from a list of milk-tea and tea shops. It has no groups, confirmation, history, or weekly rules, and stores nothing; reloading clears the result. Spins draw without replacement: every shop comes up once before any repeats, and a new round never starts with the previous pick. The header links the lunch and drink pages.
-- **Shared groups:** create a group once and share its permanent link. Everyone with the link can view, rename the group, confirm, or replace the day's choice.
-- **Stable layout:** a fixed seven-day weekly view and a separate, scrollable change journal keep long histories from stretching the wheel.
-- **Today first:** once the day's meal is confirmed, the dish card leads and the wheel steps back; the full menu is collapsed until opened. In a group, the Grab order card sits beside the wheel with its QR code and an **Open Grab order** button.
-- **No streaky spins:** both reels share one draw-without-replacement picker (`src/spin-bag.js`). Within a page visit, each available dish or shop appears once before any repeats, which keeps repeated spins from circling the same few options. Which options are "already drawn" is kept in memory only, so reloading starts a fresh round; it is separate from confirmed meals, weekly exclusions, and group data.
-- **Weekly variety:** confirmed dishes are excluded for the rest of the week unless repeats are explicitly enabled.
-- **Change journal:** confirmations and replacements retain a timestamped record of the previous and new dishes.
-- **Grab group order:** paste a Grab group-order link (`https://…grab.com/…`) into the group. Luncher reads the share details Grab publishes for that link: a title and a share image showing the store name, address, and rating. The group page shows them with a QR code. Sharing the `/g/<code>` link supplies a QR image for chat previews (Open Graph); display depends on the chat client.
-- **Installable group PWA and Web Share Target:** install a group page (`/g/<code>`) directly as a standalone Progressive Web App. The installed app is bound to that group and opens its page on launch. On Android (Chrome / Chromium browsers), the installed app registers as a Web Share Target: sharing a Grab group order from Grab's share sheet opens the Luncher group app with the Grab link extracted and pre-filled in the Grab edit form, focusing **Lưu link** so you can review before saving. Luncher never auto-saves shared links.
-- **Link previews at a glance:** the preview title and description of a shared group link name today's confirmed dish and the time it was confirmed, for example "Hôm nay ăn Mì Quảng 🍜 · Lunch crew".
-- **Concurrent updates:** stale confirmations cannot silently overwrite a newer group decision.
-- **Sticky header:** the logo, page link (hidden when launched as an installed standalone home-screen app so each app stays focused on its own page), and theme switch stay visible while scrolling on both the lunch and drink pages. The floating, rounded header uses a translucent glass surface in both themes, with an opaque fallback when backdrop filters are unavailable or reduced transparency is requested.
-- **Responsive design:** mobile layouts, persistent theme preferences, reduced-motion support, and no audio. The interface uses a Liquid Glass style: capsule controls, translucent cards, and a glass slot reel over a soft color backdrop, with denser glass behind text so it keeps WCAG AA contrast. Buttons have touch targets of at least 44px, and surfaces become opaque when the device asks for reduced transparency.
-- **App icons and mobile home screen:** dedicated light/dark responsive SVG favicons, fallback PNG/ICO icons, apple-touch-icon, and Web App Manifests for both the main Luncher app (`/`) and the afternoon drink picker (`/chieunayuonggi`) when saved or added to mobile home screens. When opened as an installed home-screen app (`standalone` mode), the header omits the button linking to the other app and keeps the logo link scoped to the installed app.
+- **Vertical food reel:** Slot-machine picker with rice/noodle filters, a side lever, keyboard support, and reduced-motion support.
+- **No streaky spins:** Draw-without-replacement picker (`src/spin-bag.js`) cycles through every available option once before repeating.
+- **Personal mode:** Stores daily meal choices and history locally in browser `localStorage`.
+- **Afternoon drinks (`/chieunayuonggi`):** Personal-only reel for picking milk-tea and tea shops with no stored history.
+- **Shared groups (`/g/<code>`):** Shareable six-character group links with daily meal locks, explicit replacements, and optimistic concurrency.
+- **Weekly variety & change journal:** Excludes confirmed dishes for the rest of the Monday–Sunday week and logs confirmations/replacements.
+- **Grab group orders & previews:** Saves validated Grab links with QR codes, server-fetched share details, and Open Graph previews.
+- **Installable group PWA & Web Share Target:** Installs per-group home-screen apps and receives shared Grab links on Android Chrome/Chromium.
+- **Recent groups & responsive UI:** Lists up to 10 browser-local group shortcuts in a Liquid Glass layout with Light/Dark/System themes.
 
-## How shared groups work
+## Requirements
 
-1. Enter a group name on the home page.
-2. Use **Copy group link** and pin it in your group chat. Each copy adds a fresh 4-character `?v=<token>` to `/g/<code>` (for example `/g/Ab3xY9?v=k7q2`) to help avoid reusing cached chat previews; all versions open the same group.
-3. Spin privately to explore options. Spinning alone does not change the group's meal.
-4. Confirm a dish to save it for everyone. The wheel locks for the day.
-5. To change it, select **Change today’s meal**. The existing choice remains confirmed until a replacement is saved; cancelling leaves it untouched.
-6. Open **Change history** to see confirmations and replacements with timestamps. There is no destructive undo action.
+- Node.js **22.12 or later** (Node.js 24 recommended)
+- npm
+- Neon Postgres connection string (optional; only needed for Neon-backed shared-group development)
 
-Group codes contain six case-sensitive alphanumeric characters, for example `/g/Ab3xY9`. Legacy UUID URLs are no longer accepted. The group name can be edited without changing its link.
+## Quick start
 
-Each group has one confirmed meal per day and its own history. Group links remain valid across days and weeks as long as the underlying database records are retained.
-
-Weeks run from Monday through Sunday. Shared groups use **Asia/Ho_Chi_Minh** so all members follow the same calendar; personal mode uses the device's local date. Previous weeks' dishes become eligible again automatically.
-
-Use **Refresh results** to retrieve another member's changes. Returning to the browser tab also refreshes the group. Updates are not pushed in real time.
-
-## Return to a group
-
-The home page shows up to **10 recently visited groups** from this browser. Open a card to return to its group; no code entry is required. A successful visit saves the current name, and subsequent reads or renames update that saved label.
-
-Desktop displays at most two rows. Narrow screens use a contained horizontal scroller, with one row on mobile. Removing a card only forgets the local shortcut; the group's link, meals, and journal remain in Neon. Opening the link again adds it back.
-
-Recent groups are stored in `localStorage`, not a public database directory. Another browser or device starts with its own list, and clearing browser data removes these shortcuts. Keep the shared link in your group chat as well.
-
-## Grab group orders and link previews
-
-In a shared group, add a Grab group-order link, save it, then share the Luncher group link. Any participant with the group link can update or clear the Grab link. Accepted links use HTTPS on `grab.com`, a subdomain of `grab.com`, or `grab.onelink.me`, contain no username/password, and are at most 500 characters long. Clearing the link removes the QR without changing meals or their journal.
-
-When a link is saved, the server reads Grab's share details for it, either from the redirect of a Grab short link or from the Open Graph tags of the Grab page. It follows only HTTPS redirects on the allowed Grab hosts, within 4 seconds and 256 KB. It keeps only a title (up to 120 characters) and a share image hosted on `grab.com`. Grab publishes no store name as text, so the store name, address, and rating appear only in Grab's share image. If reading fails, the link is still saved.
-
-The group page shows the share image and a QR code for the saved Grab URL. `/g/<code>` serves the app shell with server-rendered Open Graph metadata. Its title and description name today's confirmed dish, the time it was confirmed, and the Grab title. `/api/qr?id=<code>` produces a 1200×630 PNG with only the QR code, centred, so chat apps that crop the card to a thumbnail still show the code. Grab's share image appears only on the group page, not in the preview card. Chat services may show this as a preview, but can cache earlier previews or choose not to display an image. Changing the Grab link changes the image version URL. **Copy group link** also adds a fresh version to the shared URL, `og:url`, and QR image URL, with matching Twitter image metadata. This helps avoid cached previews but cannot force a chat service to show the QR or refresh an already shared message. Teams desktop preview display must be checked after deployment; local tests only verify metadata and image responses.
-
-The saved link is not reset automatically each day. Replace or clear it when an order ends. Luncher does not create Grab orders, track expiry, or collect individual orders. Sharing the group link also makes its saved Grab URL and share image available to recipients and link-preview services. Luncher does not track Grab's order status. The saved share details reflect the time the link was saved, and the preview text reflects the dish confirmed when a chat service fetched the preview.
-
-### Installable group app and Grab share target
-
-A shared group page (`/g/<code>`) provides a per-group Web App Manifest at `/api/manifest?id=<code>` and can be installed via your browser's install menu ("Install Luncher" or "Add to Home Screen"). The home page and the afternoon drinks page can still be added to the home screen with their own static manifests, but only an installed group app opens straight into its group and appears in the share sheet.
-
-The installed app uses a minimal, network-only service worker (`/sw.js`): no HTML or group API responses are cached, ensuring daily decisions and meal history always stay live.
-
-On Android (Chrome and Chromium-based browsers), an installed group app registers as a Web Share Target:
-
-1. Tap **Share** on an active group order in the Grab app.
-2. Select your installed Luncher group app from Android's share sheet.
-3. Luncher extracts the Grab link from the shared text or URL, immediately removes the share query parameters from the address bar, pre-fills the Grab order form, and focuses the **Lưu link** button.
-4. If the group already has a saved Grab link, a notification alerts you that saving will replace it. If no valid Grab link is detected in the shared content, an error notification is displayed and the form remains closed.
-5. The link is saved only when you click **Lưu link**; Luncher never auto-saves shared content.
-
-**Platform limitations:**
-- **Web Share Target is Android-only:** Web Share Target requires an installed Progressive Web App on Android using Chrome or Chromium-based browsers. Safari on iOS and iPadOS ("Add to Home Screen") does not support Web Share Targets; on Apple devices, users continue to paste Grab links manually into the group.
-- **Desktop Chrome:** Desktop Chrome allows installing the group PWA, but Grab's group-order share sheet is available only on mobile devices.
-- **Per-group apps:** Each group installs as its own independent app on your home screen (one icon per group code). Android's share sheet lists each installed group separately.
-- **Shared content format:** Whether the Grab app sends the order link inside `text` or `url` depends on Grab and Android; Luncher inspects both and extracts the first valid Grab link.
-
-## Web Analytics
-
-Production builds initialize the official Vercel Web Analytics SDK once on eligible public homepage visits. Group/access links, every non-homepage route, query strings, fragments, and unsafe referrers are excluded. Browser Do Not Track and Global Privacy Control are honored. There are no custom events, Speed Insights, or session replay.
-
-See [Web Analytics setup and privacy](docs/vercel-analytics.md) for the filtering policy, local tests, and Vercel dashboard steps. Local validation does **not** confirm live event collection; dashboard enablement and real event arrival must be verified separately. No paid feature is enabled by this change.
-
-## Stack
-
-| Layer | Technology |
-| --- | --- |
-| Frontend | JavaScript, CSS, Vite, morphdom |
-| API | Vercel Functions |
-| Shared persistence | Neon Postgres via the Neon serverless driver |
-| Personal preferences and history | Browser `localStorage` |
-| Tests | Node.js test runner, PGlite, Playwright |
-
-The default food catalog lives in [`src/foods.json`](src/foods.json). The frontend never connects directly to Postgres.
-
-The current menu has eight choices: Bún bò, Bún chả / Bún thịt nướng (one combined choice), Cơm gà, Bánh canh cua, Mì Quảng, Cơm tấm, Mì hoành thánh, and Bún mọc. The generated illustrations are bundled in `public/images/food-atlas.png`; no image-generation request runs while using the app. Catalog entries marked `active: false` are hidden from new spins and the menu, but remain available for reading saved meals and journals. Existing IDs are preserved; older clients can still confirm legacy catalog IDs through the API.
-
-The drink list lives in [`src/drinks.json`](src/drinks.json): Koi Thé, Một Chút Chút ALittle, Phúc Long, TEA JOY, BY JOY, Bông Trà, Gong Cha, Phong Trà, Dabacha, Lam Trà, Yên Bản, and Phê La. Each shop shows its logo from [`public/images/drinks/`](public/images/drinks/), a 320×320 JPEG named after the shop's `id` (for example `phe-la.jpg`); non-square originals were padded to a square with their own background color. Logos belong to their owners and appear only to identify each shop. For a shop without a `logo`, the page falls back to a colored initials badge built from the optional `mark` and `color` fields. To add a shop, add an entry with a unique `id` and `name`, plus a square logo and its `logo` path.
-
-## Local development
-
-### Requirements
-
-- Node.js **22.12 or later**; Node.js 24 is recommended.
-- npm.
-- A Neon database connection for shared-group development. Personal mode and automated tests do not require Neon.
-
-### Personal mode
+Install dependencies:
 
 ```sh
 npm ci
+```
+
+Run personal mode (frontend only):
+
+```sh
 npm run dev
 ```
 
-This starts the Vite frontend. Shared-group API requests require the full development server below.
+Run full app + API locally without Neon (in-memory PGlite):
 
-### Shared groups
+```sh
+npm run dev:local
+```
 
-Copy [`.env.example`](.env.example) to `.env.local` and set `DATABASE_URL` to your Neon Postgres connection string. `POSTGRES_URL` is also supported as a fallback. Local environment files are ignored by Git.
+Run full app + API with Neon (copy [`.env.example`](.env.example) to `.env.local` and set `DATABASE_URL` first):
 
 ```sh
 npm run db:setup
 npm run dev:full
 ```
 
-The full development server serves Vite and the API together on port `5173`.
+## Documentation
 
-Run `npm run db:setup` for both new and existing databases. It applies [`db/schema.sql`](db/schema.sql), assigns public codes to existing groups, and enforces non-null codes. Running the SQL file alone does not complete the data migration. Setup preserves existing records and is safe to rerun.
+- [Usage guide](docs/usage-guide.md) — Shared groups, Grab links, PWA installation, Web Share Target, and appearance
+- [Development and deployment](docs/development.md) — Stack, catalogs, testing commands, and Vercel deployment
+- [Database design](docs/database-design.md) — Schema, constraints, concurrency, storage keys, and migrations
+- [Web Analytics](docs/vercel-analytics.md) — Homepage-only analytics filter and verification
+- [Decisions log](docs/decisions.md) — Key architectural and product decisions
+- [Agent instructions](AGENTS.md) — Rules for contributing with AI agents ([CLAUDE.md](CLAUDE.md) points here)
 
-Connection strings are server-only credentials. Never commit them or expose them through a `VITE_` variable.
+## Inspiration and license
 
-### Review without Neon
+Inspired by [truanayangi.com](https://truanayangi.com/), written independently with no reused code or assets.
 
-```sh
-npm run dev:local
-```
-
-This serves the full app and API with an in-memory database (PGlite) and prints links to two demo groups: one without a meal today, and one with a confirmed meal and a synthetic Grab link. Set `PORT` to use another port. Data is discarded when the process stops.
-
-## Deploy to Vercel
-
-1. Import this repository into Vercel and connect a Neon database.
-2. Make `DATABASE_URL` available to the intended deployment environment, such as Production. Use a **Postgres connection string**, not a Neon management API key.
-3. Use the following project settings:
-
-   | Setting | Value |
-   | --- | --- |
-   | Framework preset | Vite |
-   | Install command | `npm ci` |
-   | Build command | `npm run build:vercel` |
-   | Output directory | `dist` |
-
-4. Deploy. The build command runs schema setup before building the frontend. The database role must have permission to create the application tables on the first deployment.
-5. Open the production site, create a group, and use a second browser session to verify shared confirmations.
-
-[`vercel.json`](vercel.json) defines the build command, the `/g/:id` rewrite, and the `/chieunayuonggi` rewrite to the drink page that Vite builds from [`chieunayuonggi/index.html`](chieunayuonggi/index.html) (see [`vite.config.js`](vite.config.js)). Vercel routes `/g/:id` through [`api/group-page.js`](api/group-page.js) for preview metadata and serves the QR image through [`api/qr.js`](api/qr.js). [`api/rooms.js`](api/rooms.js) handles group data; all three use the shared server-side Neon store. If the dashboard overrides the build command, use the value above. Redeploy after changing environment variables.
-
-Share group links from a **stable production domain**, rather than a deployment-specific preview URL. Use separate Neon branches for Production and Preview to keep test data separate.
-
-## Validation
-
-```sh
-npm test          # Calendar rules, API validation, and SQL behavior using PGlite
-npm run test:e2e  # Full app with independent browser contexts and an isolated DB
-npm run test:analytics # Production SDK/filter integration with a test-only delivery fixture
-npm run build     # Frontend production build; no database access required
-npm run preview   # Preview the frontend build; does not serve the group API
-```
-
-Browser tests use `/usr/bin/chromium` when available. To use another installation, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. If neither is available, install Playwright's browser:
-
-```sh
-npx playwright install chromium
-```
-
-Automated tests use an in-memory Postgres-compatible database and do not modify Neon data. They cover group isolation, conflicting writes, locked confirmations, cancellable replacement, change journals, weekly exclusions, persistence across page reloads, and failure handling. Verify the deployed API and Neon connection separately after deployment.
-
-## Data and access model
-
-See [Database design](docs/database-design.md) for the ER diagram, columns, constraints, write flows, and migration details.
-
-- `luncher_rooms` stores internal UUIDs, unique six-character public codes, names, and revisions.
-- `luncher_meal_events` retains confirmation/replacement events; older choices receive a clearly labeled migration baseline when the original time is unknown. No actor identity is recorded.
-- `luncher_meal_choices` stores confirmed dishes. A primary key on `(room_id, meal_date)` enforces one meal per group per day.
-- Atomic SQL writes check the room revision before accepting a change. The server also validates dish IDs, the group calendar, and weekly exclusions.
-- A group link grants both read and write access. There are no owners, passwords, or recovery accounts. Keep links within the intended group and avoid storing sensitive information in group names.
-- Personal daily choices and their journal are saved together under `luncher-personal-v2`; existing local history is migrated without deletion.
-- Personal history remains on the device. It is not copied into a group, synchronized across devices, or recovered after browser storage is cleared.
-- Failed group requests never fall back to local storage. Writes are not retried automatically, because a timed-out request may already have committed.
-
-The current version does not include custom food editing, JSON import/export, voting, individual order collection, or live push updates.
-
-## Contributing with AI agents
-
-Read [AGENTS.md](AGENTS.md) before changing this repository. Claude Code imports the same rules through [CLAUDE.md](CLAUDE.md). Changes to behavior must include the relevant documentation in the same change, including both README languages and database/API documentation when affected. Report validation performed and explain when documentation updates are unnecessary.
-
-## Inspiration
-
-Inspired by the lunch-selection concept at [truanayangi.com](https://truanayangi.com/). Luncher's implementation, interface, and food catalog were written independently; no source code or assets from the reference repository were reused.
-
-## License
-
-Luncher's code, documentation and food illustrations are released under the [MIT License](LICENSE). The drink shop logos in [`public/images/drinks/`](public/images/drinks/) are not covered by it: they are trademarks of their respective owners, used only to identify each shop. Reuse them only with the owners' permission.
-
-## Appearance preferences
-
-The theme button cycles **System → Light → Dark → System**. Its icon shows the current preference. System follows operating-system changes immediately; an explicit Light or Dark choice stays fixed. Preferences persist across reloads and sync between tabs. If browser storage is unavailable, the current tab still supports all three modes.
-
-Scrollable content keeps native wheel, touch, keyboard and thumb behavior, with thin theme-aware scrollbars and transparent tracks. The OS controls auto-hiding; forced-colors mode restores native styling.
+Code, documentation, and food illustrations are released under the [MIT License](LICENSE). Drink shop logos in [`public/images/drinks/`](public/images/drinks/) are trademarks of their respective owners and are used solely for identification.
