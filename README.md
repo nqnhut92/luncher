@@ -2,33 +2,20 @@
 
 **English** · [Tiếng Việt](README.vi.md)
 
-**Less deciding. More lunch.**
+Luncher is a lightweight lunch and afternoon drink picker for individuals and shared groups—spin the reel, confirm a dish, and keep Monday–Sunday meals varied without accounts or room admins.
 
-Luncher is a lightweight lunch and afternoon drink picker for individuals and shared groups—spin the reel, confirm a dish, and keep the week's meals varied without accounts or room admins.
+[Open Luncher](https://truanayangi.congtynhu.cc/) — Vietnamese UI with System, Light, and Dark themes.
 
-[Open Luncher](https://truanayangi.congtynhu.cc/)
+## Tech Stack
 
-The interface is in Vietnamese and supports System, Light, and Dark themes.
+- **Frontend:** JavaScript (ES modules), CSS, Vite, `morphdom`, `@vercel/analytics`
+- **API & Runtime:** Node.js (`>=22.12.0`), Vercel Functions (`api/`, `server/`)
+- **Persistence:** Neon Postgres (`@neondatabase/serverless`) for shared groups; browser `localStorage` for personal mode
+- **Testing:** Node.js built-in test runner (`node --test`), PGlite (`@electric-sql/pglite`), Playwright
 
-## Features
+## Prerequisites & Quick Start
 
-- **Vertical food reel:** Slot-machine picker with rice/noodle filters, a side lever, keyboard support, and reduced-motion support.
-- **No streaky spins:** Draw-without-replacement picker (`src/spin-bag.js`) cycles through every available option once before repeating.
-- **Personal mode:** Stores daily meal choices and history locally in browser `localStorage`.
-- **Afternoon drinks (`/chieunayuonggi`):** Personal-only reel for picking milk-tea and tea shops with no stored history.
-- **Shared groups (`/g/<code>`):** Shareable six-character group links with daily meal locks, explicit replacements, and optimistic concurrency.
-- **Weekly variety & change journal:** Excludes confirmed dishes for the rest of the Monday–Sunday week and logs confirmations/replacements.
-- **Grab group orders & previews:** Saves validated Grab links with QR codes, server-fetched share details, and Open Graph previews.
-- **Installable group PWA & Web Share Target:** Installs per-group home-screen apps and receives shared Grab links on Android Chrome/Chromium.
-- **Recent groups & responsive UI:** Lists up to 10 browser-local group shortcuts in a Liquid Glass layout with Light/Dark/System themes.
-
-## Requirements
-
-- Node.js **22.12 or later** (Node.js 24 recommended)
-- npm
-- Neon Postgres connection string (optional; only needed for Neon-backed shared-group development)
-
-## Quick start
+- **Prerequisites:** Node.js **22.12+** (Node.js 24 recommended), `npm`, and an optional Neon Postgres connection string for Neon-backed shared-group development.
 
 Install dependencies:
 
@@ -36,35 +23,30 @@ Install dependencies:
 npm ci
 ```
 
-Run personal mode (frontend only):
+Run locally in one of three modes:
 
 ```sh
+# 1. Personal mode only (Vite frontend, no shared-group API)
 npm run dev
-```
 
-Run full app + API locally without Neon (in-memory PGlite):
-
-```sh
+# 2. Full app + API without Neon (in-memory PGlite, data discarded on exit)
 npm run dev:local
-```
 
-Run full app + API with Neon (copy [`.env.example`](.env.example) to `.env.local` and set `DATABASE_URL` first):
-
-```sh
+# 3. Full app + API with Neon (copy .env.example to .env.local and set DATABASE_URL first)
 npm run db:setup
 npm run dev:full
 ```
 
 ## Documentation
 
-- [Usage guide](docs/usage-guide.md) — Shared groups, Grab links, PWA installation, Web Share Target, and appearance
-- [Development and deployment](docs/development.md) — Stack, catalogs, testing commands, and Vercel deployment
-- [Database design](docs/database-design.md) — Schema, constraints, concurrency, storage keys, and migrations
-- [Web Analytics](docs/vercel-analytics.md) — Homepage-only analytics filter and verification
+- [Usage guide](docs/usage-guide.md) — Personal mode, shared groups (`/g/<code>`), afternoon drinks (`/chieunayuonggi`), Grab links, PWA installation, and Web Share Target
+- [Development and deployment](docs/development.md) — Stack, food/drink catalogs, local setup, testing commands, and Vercel deployment
+- [Database design](docs/database-design.md) — Schema, constraints, optimistic concurrency, storage keys, and migrations
+- [Web Analytics](docs/vercel-analytics.md) — Fail-closed homepage-only analytics filter and verification
 - [Decisions log](docs/decisions.md) — Key architectural and product decisions
-- [Agent instructions](AGENTS.md) — Rules for contributing with AI agents ([CLAUDE.md](CLAUDE.md) points here)
+- [Agent instructions](AGENTS.md) — Execution rules for AI coding agents ([CLAUDE.md](CLAUDE.md) points here)
 
-## Inspiration and license
+## Inspiration & License
 
 Inspired by [truanayangi.com](https://truanayangi.com/), written independently with no reused code or assets.
 

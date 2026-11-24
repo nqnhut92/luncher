@@ -1,38 +1,52 @@
-# Agent instructions
+# Agent Instructions
 
-These instructions apply throughout this repository. Read more specific instructions in a directory before editing it. Claude Code loads these shared rules through the root `CLAUDE.md`.
+## 1. Project Overview & Stack
 
-## Before changing code
+- **Purpose:** Lightweight lunch (`/`) and afternoon drink (`/chieunayuonggi`) picker with local personal history and Neon-backed shared groups (`/g/<code>`).
+- **Stack:** Vanilla JavaScript (ES modules), CSS, Vite, `morphdom`, Vercel Functions (`api/`, `server/`), Neon Postgres (`@neondatabase/serverless`), PGlite (local/test), Node.js (`>=22.12.0`), Playwright.
+- **Docs Map:**
+  - `docs/usage-guide.md` — User-facing behavior, shared-group rules, Grab links, PWA/Web Share Target, and limitations.
+  - `docs/development.md` — Local modes, catalogs (`src/foods.json`, `src/drinks.json`), test suite, and Vercel deployment.
+  - `docs/database-design.md` — Read before any persistence, schema, migration, concurrency, or API work.
+  - `docs/vercel-analytics.md` — Homepage-only analytics privacy filter and verification.
+  - `docs/decisions.md` — Architectural and product decisions log.
 
-- Read `README.md`, `README.vi.md`, and the relevant implementation and tests. For persistence or API work, also read `docs/database-design.md`.
-- Check `git status` and recent commits. Preserve collaborators' work and uncommitted changes. Check the current upstream version when the task depends on newly pushed features; report if it cannot be retrieved.
-- Keep changes focused on the requested behavior and follow the existing JavaScript ES modules, CSS, and npm conventions. Add dependencies only when justified; update `package-lock.json` with `package.json`.
+## 2. Essential Commands
 
-## Documentation is part of the change
+- **Build:** `npm run build` (frontend production build; never use `npm run build:vercel` for routine verification because it runs `db:setup` against the configured database)
+- **Test (Single):** `node --test tests/<file>.test.js` (e.g., `node --test tests/logic.test.js`)
+- **Test (Full):** `npm test` (unit/API/SQL tests with PGlite) and `npm run test:e2e` (Playwright + isolated PGlite; respects `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`); `npm run test:analytics` builds and verifies the analytics filter
+- **Lint / Format / Typecheck:** None configured in `package.json`
 
-- Ship documentation with any change to user-visible behavior, API contracts, stored data, configuration, commands, or deployment. Do not mark a feature complete while its relevant docs describe the old behavior.
-- Update **both** `README.md` and `README.vi.md` for user-facing features, limitations, setup, and deployment changes. Keep their meaning aligned; use natural English and Vietnamese rather than translating code identifiers.
-- Update `docs/database-design.md` for schema, constraints, API payloads/actions, concurrency, storage keys, migration, or access-model changes. Include affected diagrams, examples, and source-map entries.
-- Update `.env.example` for new configuration using placeholders only. Keep documented npm commands consistent with `package.json` and deployment behavior consistent with `vercel.json`.
-- Describe implemented behavior and practical limitations. Do not imply real-time sync, authentication, actor attribution, or guaranteed chat previews unless implemented and verified. Chat services may cache previews.
-- If no documentation change is needed, explain why in the final handoff or PR description. Avoid cosmetic doc edits solely to satisfy this rule.
+## 3. Hard Constraints & Guardrails
 
-## Project map and behavior to preserve
+- **Never:**
+  - Commit secrets, print connection strings, expose credentials via `VITE_` variables, or return raw database errors to clients.
+  - Auto-retry timed-out/uncertain group writes, or fall back to `localStorage` when a shared-group request fails.
+  - Rewrite or delete existing group codes, confirmed meals, journal events, or stable food IDs in `src/foods.json` (retire dishes with `active: false` instead).
+  - Run `db:setup`, `build:vercel`, production data edits, or deployments against live Neon data without explicit authorization.
+  - Imply real-time sync, authentication, actor attribution, or guaranteed chat previews unless implemented and verified.
+- **Always:**
+  - Keep database access server-side (`api/`, `server/`).
+  - Preserve optimistic concurrency (`revision` checks) and atomic meal/journal writes.
+  - Validate Grab links on the server: HTTPS only, no embedded credentials, max 500 characters, host in `grab.com`, subdomains of `grab.com`, or `grab.onelink.me`. Preserve UI/metadata escaping and graceful fallback when preview fetch fails.
+  - Treat group codes and Grab order links as access-bearing data; use synthetic examples in docs/tests.
+  - Keep `package-lock.json` updated alongside `package.json` and `.env.example` updated with placeholders only.
+- **Gotchas:**
+  - Shared groups use `Asia/Ho_Chi_Minh` and Monday–Sunday weeks; personal mode uses the device's local date.
+  - Recent groups (`localStorage`) are browser-local shortcuts, not memberships or a public directory—forgetting one must not delete server data.
+  - `npm run dev` serves only the Vite frontend; use `npm run dev:local` (in-memory PGlite) or `npm run dev:full` (Neon) for `/api/*` and `/g/<code>`.
 
-- `src/`: Vietnamese UI, wheel/calendar logic, browser persistence, activity journal, and recent-group shortcuts. Preserve keyboard access, focus, mobile layouts, both themes, and reduced-motion support.
-- `api/` and `server/`: Vercel handlers, request validation, parameterized SQL, shared-group calendar, Grab URL validation, and server-rendered link previews. Keep database access server-side.
-- `db/schema.sql`, `db/migrations/`, and `scripts/setup-db.js`: additive schema setup, rerunnable data migrations, and public-code backfill. Preserve existing group codes, meals, events, and stable food IDs.
-- Shared groups use `Asia/Ho_Chi_Minh` and Monday–Sunday weeks; personal mode uses the device's date. Keep daily confirmation locks, explicit replacements, cancellation without writes, and journal history intact.
-- Group links grant read/write access; recent groups are browser-local shortcuts, not memberships or a public directory. Forgetting a shortcut must not delete server data.
-- Keep revision checks and atomic meal/journal writes. Failed group requests must not become local-only confirmations, and uncertain writes must not retry automatically.
-- Validate Grab links on the server: HTTPS, no embedded credentials, maximum 500 characters, and only `grab.com`, its subdomains, or `grab.onelink.me`. Preserve escaping in UI/metadata and fallback page loading when preview lookup fails.
-- Never commit secrets, print connection strings, expose credentials via `VITE_` variables, or return raw database errors. Treat group codes and Grab order links as access-bearing data; use synthetic examples.
-- Use isolated test data. Schema setup and `build:vercel` can write to the configured database; use `npm run build` for ordinary build verification. Production data corrections or deployment require authorization covering that action.
+## 4. Code Style & Patterns
 
-## Verification and handoff
+- Use JavaScript ES modules (`"type": "module"`) and standard CSS without adding frameworks or unapproved dependencies.
+- Keep Vietnamese UI copy natural; preserve keyboard accessibility, focus management, mobile/Liquid Glass layouts, System/Light/Dark themes, and `prefers-reduced-motion` support.
+- Keep `README.md` and `README.vi.md` aligned in meaning using natural English and Vietnamese rather than translating code identifiers.
+- Use additive schema setup (`db/schema.sql`), rerunnable migrations (`db/migrations/`), and parameterized SQL.
 
-- Use Node.js >=22.12 and npm; install reproducibly with `npm ci` when needed.
-- For application changes, run `npm test` and `npm run build`. Add focused regression coverage for changed behavior, especially calendar boundaries, stale revisions, persistence, and validation.
-- Run `npm run test:e2e` for UI, routing, or shared-group flow changes. It uses Playwright and an isolated PGlite database, without Neon credentials. Respect `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` when configured.
-- For documentation-only changes, check factual accuracy, relative links, examples, commands, and English/Vietnamese parity; application tests are unnecessary unless executable behavior changed.
-- Review the final diff for unrelated edits, generated output, secrets, and missing docs. Report what changed, which docs were updated (or why none were needed), checks actually run, and any remaining limitation. Never claim a check passed if it was not run.
+## 5. Definition of Done
+
+- Run `npm test` and `npm run build` for application changes; also run `npm run test:e2e` for UI, routing, or shared-group flow changes (and `npm run test:analytics` if analytics files changed).
+- Update `docs/database-design.md` for schema, API, concurrency, storage key, or migration changes; update `docs/usage-guide.md`, `README.md`, and `README.vi.md` for user-facing or setup changes; update `docs/decisions.md` for non-obvious architectural choices.
+- For documentation-only changes, verify factual accuracy, relative links, commands, and English/Vietnamese parity.
+- If the Nicholas Hub MCP is available, sync the repository architecture via `arch_document` after new commits (skip if unavailable).
